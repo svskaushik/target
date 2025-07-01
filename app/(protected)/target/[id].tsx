@@ -1,11 +1,12 @@
 import React from 'react';
-import { View, ScrollView, Alert } from 'react-native';
+import { View, ScrollView, Alert, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { Text } from '@/components/ui/text';
 import { TargetButton } from '@/components/ui/target-button';
+import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { useTarget, useDeleteTarget } from '@/hooks/useTargets';
 import { useSessions } from '@/hooks/useSessions';
-import { Edit3, Trash2, Plus, Target as TargetIcon } from 'lucide-react-native';
+import { Edit3, Trash2, Plus, Target as TargetIcon, Home } from 'lucide-react-native';
 
 export default function TargetDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -52,6 +53,15 @@ export default function TargetDetailScreen() {
 
   return (
     <ScrollView className="flex-1 bg-gray-50">
+      {/* Breadcrumb Navigation */}
+      <Breadcrumb 
+        items={[
+          { label: 'Home', href: '/' },
+          { label: 'Targets', href: '/targets' },
+          { label: target.name }
+        ]}
+      />
+      
       {/* Header */}
       <View className="bg-white p-4 border-b border-gray-200">
         <View className="flex-row justify-between items-start">
@@ -166,6 +176,19 @@ export default function TargetDetailScreen() {
             </TargetButton>
           </View>
         )}
+      </View>
+
+      {/* Quick Navigation */}
+      <View className="p-4">
+        <TouchableOpacity
+          onPress={() => router.push('/')}
+          className="bg-white p-4 rounded-lg shadow-md flex-row items-center justify-center"
+        >
+          <Home size={20} color="#4B5563" />
+          <Text className="text-gray-900 font-semibold ml-2">
+            Back to Home
+          </Text>
+        </TouchableOpacity>
       </View>
     </ScrollView>
   );

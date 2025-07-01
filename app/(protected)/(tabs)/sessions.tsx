@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, ScrollView, RefreshControl, Alert } from 'react-native';
+import { View, ScrollView, RefreshControl, Modal } from 'react-native';
 import { router } from 'expo-router';
 import { Text } from '@/components/ui/text';
 import { TargetButton } from '@/components/ui/target-button';
@@ -18,25 +18,37 @@ export default function SessionsScreen() {
     session.target?.name.toLowerCase().includes(searchQuery.toLowerCase())
   ) || [];
 
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState<{ id: string; name: string } | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
   const handleDeleteSession = (sessionId: string, sessionName: string) => {
-    Alert.alert(
-      'Delete Session',
-      `Are you sure you want to delete "${sessionName}"? This will also delete all associated shots.`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await deleteSessionMutation.mutateAsync(sessionId);
-            } catch (error) {
-              Alert.alert('Error', 'Failed to delete session. Please try again.');
-            }
-          },
-        },
-      ]
-    );
+    console.log('[Delete] Button pressed for session:', sessionId, sessionName);
+    setPendingDelete({ id: sessionId, name: sessionName });
+    setDeleteModalVisible(true);
+  };
+
+  const confirmDeleteSession = async () => {
+    if (!pendingDelete) return;
+    setDeleteLoading(true);
+    console.log('[Delete] Confirmed for session:', pendingDelete.id);
+    try {
+      await deleteSessionMutation.mutateAsync(pendingDelete.id);
+      console.log('[Delete] Mutation completed for session:', pendingDelete.id);
+      setDeleteModalVisible(false);
+      setPendingDelete(null);
+      refetch();
+    } catch (error: any) {
+      console.error('[Delete] Error:', error);
+      // Optionally show error UI here
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
+  const cancelDeleteSession = () => {
+    setDeleteModalVisible(false);
+    setPendingDelete(null);
   };
 
   return (
@@ -68,6 +80,43 @@ export default function SessionsScreen() {
           />
         </View>
       </View>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        visible={deleteModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={cancelDeleteSession}
+      >
+        <View className="flex-1 justify-center items-center bg-black/40">
+          <View className="bg-white p-6 rounded-lg w-80 max-w-full items-center">
+            <Text className="text-lg font-bold text-gray-900 mb-2">Delete Session</Text>
+            <Text className="text-gray-700 mb-4 text-center">
+              Are you sure you want to delete
+              {pendingDelete ? ` "${pendingDelete.name}"` : ''}?
+              This will also delete all associated shots.
+            </Text>
+            <View className="flex-row space-x-3 mt-2">
+              <TargetButton
+                variant="secondary"
+                onPress={cancelDeleteSession}
+                disabled={deleteLoading}
+              >
+                <Text className="text-gray-700 font-semibold">Cancel</Text>
+              </TargetButton>
+              <TargetButton
+                variant="danger"
+                onPress={confirmDeleteSession}
+                disabled={deleteLoading}
+              >
+                <Text className="text-white font-semibold">
+                  {deleteLoading ? 'Deleting...' : 'Delete'}
+                </Text>
+              </TargetButton>
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       <ScrollView
         className="flex-1"

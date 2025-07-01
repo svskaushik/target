@@ -82,13 +82,31 @@ export function SessionForm({ onSubmit, initialData, preselectedTargetId, isLoad
                     key={target.id}
                     variant={value === target.id ? 'default' : 'outline'}
                     onPress={() => onChange(target.id)}
-                    className="justify-start"
+                    className="justify-start items-stretch py-3 h-auto"
                   >
-                    <View className="items-start">
-                      <Text className={value === target.id ? 'text-white font-semibold' : 'text-gray-700 font-semibold'}>
+                    <View className="items-start w-full">
+                      <Text
+                        className={
+                          (value === target.id
+                            ? 'text-white font-semibold'
+                            : 'text-gray-700 font-semibold') +
+                          ' text-base'
+                        }
+                        numberOfLines={1}
+                        ellipsizeMode="tail"
+                      >
                         {target.name}
                       </Text>
-                      <Text className={value === target.id ? 'text-white/80 text-sm' : 'text-gray-500 text-sm'}>
+                      <Text
+                        className={
+                          (value === target.id
+                            ? 'text-white/80 text-sm'
+                            : 'text-gray-500 text-sm') +
+                          ' mt-1'
+                        }
+                        numberOfLines={1}
+                        ellipsizeMode="tail"
+                      >
                         {target.distance}m • {target.target_type}
                       </Text>
                     </View>

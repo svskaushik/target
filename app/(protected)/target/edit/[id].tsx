@@ -3,6 +3,8 @@ import { View, Alert } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Text } from '@/components/ui/text';
 import { TargetForm } from '@/components/forms/TargetForm';
+import { FloatingActionButton } from '@/components/ui/floating-action-button';
+import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { useTarget, useUpdateTarget } from '@/hooks/useTargets';
 import type { CreateTargetData } from '@/lib/types';
 
@@ -34,10 +36,26 @@ export default function EditTargetScreen() {
 
   return (
     <View className="flex-1 bg-white">
+      {/* Breadcrumb Navigation */}
+      <Breadcrumb 
+        items={[
+          { label: 'Home', href: '/' },
+          { label: 'Targets', href: '/targets' },
+          { label: target.name, href: `/target/${target.id}` },
+          { label: 'Edit' }
+        ]}
+      />
+      
       <TargetForm
         onSubmit={handleSubmit}
         initialData={target}
         isLoading={updateTargetMutation.isPending}
+      />
+      
+      {/* Quick navigation to home */}
+      <FloatingActionButton 
+        icon="home"
+        position="bottom-right"
       />
     </View>
   );

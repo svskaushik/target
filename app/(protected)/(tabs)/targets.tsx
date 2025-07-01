@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, ScrollView, RefreshControl, Alert } from 'react-native';
+import { View, ScrollView, RefreshControl, Modal } from 'react-native';
 import { router } from 'expo-router';
 import { Text } from '@/components/ui/text';
 import { TargetButton } from '@/components/ui/target-button';
@@ -18,25 +18,33 @@ export default function TargetsScreen() {
     target.target_type.toLowerCase().includes(searchQuery.toLowerCase())
   ) || [];
 
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState<{ id: string; name: string } | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
   const handleDeleteTarget = (targetId: string, targetName: string) => {
-    Alert.alert(
-      'Delete Target',
-      `Are you sure you want to delete "${targetName}"? This will also delete all associated sessions and shots.`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await deleteTargetMutation.mutateAsync(targetId);
-            } catch (error) {
-              Alert.alert('Error', 'Failed to delete target. Please try again.');
-            }
-          },
-        },
-      ]
-    );
+    setPendingDelete({ id: targetId, name: targetName });
+    setDeleteModalVisible(true);
+  };
+
+  const confirmDeleteTarget = async () => {
+    if (!pendingDelete) return;
+    setDeleteLoading(true);
+    try {
+      await deleteTargetMutation.mutateAsync(pendingDelete.id);
+      setDeleteModalVisible(false);
+      setPendingDelete(null);
+      refetch();
+    } catch (error: any) {
+      // Optionally show error UI here
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
+  const cancelDeleteTarget = () => {
+    setDeleteModalVisible(false);
+    setPendingDelete(null);
   };
 
   return (
@@ -68,6 +76,43 @@ export default function TargetsScreen() {
           />
         </View>
       </View>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        visible={deleteModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={cancelDeleteTarget}
+      >
+        <View className="flex-1 justify-center items-center bg-black/40">
+          <View className="bg-white p-6 rounded-lg w-80 max-w-full items-center">
+            <Text className="text-lg font-bold text-gray-900 mb-2">Delete Target</Text>
+            <Text className="text-gray-700 mb-4 text-center">
+              Are you sure you want to delete
+              {pendingDelete ? ` "${pendingDelete.name}"` : ''}?
+              This will also delete all associated sessions and shots.
+            </Text>
+            <View className="flex-row space-x-3 mt-2">
+              <TargetButton
+                variant="secondary"
+                onPress={cancelDeleteTarget}
+                disabled={deleteLoading}
+              >
+                <Text className="text-gray-700 font-semibold">Cancel</Text>
+              </TargetButton>
+              <TargetButton
+                variant="danger"
+                onPress={confirmDeleteTarget}
+                disabled={deleteLoading}
+              >
+                <Text className="text-white font-semibold">
+                  {deleteLoading ? 'Deleting...' : 'Delete'}
+                </Text>
+              </TargetButton>
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       <ScrollView
         className="flex-1"

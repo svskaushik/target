@@ -8,10 +8,12 @@ import { TargetCardSkeleton, SessionCardSkeleton } from '@/components/ui/loading
 import { Plus, Target, List, TrendingUp } from 'lucide-react-native';
 import { useTargets } from '@/hooks/useTargets';
 import { useSessions } from '@/hooks/useSessions';
+import { useTotalShots } from '@/hooks/useShotPlacements';
 
 export default function Home() {
   const { data: targets, isLoading: targetsLoading } = useTargets();
   const { data: sessions, isLoading: sessionsLoading } = useSessions();
+  const { data: totalShots, isLoading: shotsLoading } = useTotalShots();
 
   const recentTargets = targets?.slice(0, 3) || [];
   const recentSessions = sessions?.slice(0, 3) || [];
@@ -78,7 +80,7 @@ export default function Home() {
             <View className="flex-1 bg-white p-4 rounded-lg border border-gray-200">
               <TrendingUp size={24} color="#dc2626" />
               <Text className="text-2xl font-bold text-gray-900 mt-2">
-                0
+                {shotsLoading ? '...' : totalShots ?? 0}
               </Text>
               <Text className="text-gray-600 text-sm">Shots</Text>
             </View>

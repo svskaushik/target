@@ -1,12 +1,13 @@
-import React from 'react';
-import { View, ScrollView, Alert } from 'react-native';
+import React, { useState } from 'react';
+import { View, ScrollView, Modal, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { Text } from '@/components/ui/text';
 import { TargetButton } from '@/components/ui/target-button';
 import { TargetCanvas } from '@/components/target/TargetCanvas';
+import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { useSession, useDeleteSession } from '@/hooks/useSessions';
 import { useShotPlacements } from '@/hooks/useShotPlacements';
-import { Play, Edit3, Trash2, Target as TargetIcon, Calendar } from 'lucide-react-native';
+import { Play, Edit3, Trash2, Target as TargetIcon, Calendar, Home } from 'lucide-react-native';
 
 export default function SessionDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -14,34 +15,37 @@ export default function SessionDetailScreen() {
   const { data: shots, isLoading: shotsLoading } = useShotPlacements(id!);
   const deleteSessionMutation = useDeleteSession();
 
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
   const handleDeleteSession = () => {
+    setDeleteModalVisible(true);
+  };
+
+  const confirmDeleteSession = async () => {
     if (!session) return;
-    
-    Alert.alert(
-      'Delete Session',
-      `Are you sure you want to delete "${session.name}"? This will also delete all associated shots.`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await deleteSessionMutation.mutateAsync(session.id);
-              Alert.alert('Success', 'Session deleted successfully!', [
-                { text: 'OK', onPress: () => router.back() }
-              ]);
-            } catch (error) {
-              Alert.alert('Error', 'Failed to delete session. Please try again.');
-            }
-          },
-        },
-      ]
-    );
+    setDeleteLoading(true);
+    try {
+      await deleteSessionMutation.mutateAsync(session.id);
+      setDeleteModalVisible(false);
+      setDeleteLoading(false);
+      router.back();
+    } catch (error) {
+      setDeleteLoading(false);
+      // Optionally show error UI here
+    }
+  };
+
+  const cancelDeleteSession = () => {
+    setDeleteModalVisible(false);
   };
 
   const handleStartShooting = () => {
     router.push(`/session/shoot/${id}` as any);
+  };
+
+  const handleNavigateHome = () => {
+    router.push('/');
   };
 
   if (sessionLoading || shotsLoading || !session) {
@@ -53,7 +57,54 @@ export default function SessionDetailScreen() {
   }
 
   return (
-    <ScrollView className="flex-1 bg-gray-50">
+    <>
+      {/* Delete Confirmation Modal */}
+      <Modal
+        visible={deleteModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={cancelDeleteSession}
+      >
+        <View className="flex-1 justify-center items-center bg-black/40">
+          <View className="bg-white p-6 rounded-lg w-80 max-w-full items-center">
+            <Text className="text-lg font-bold text-gray-900 mb-2">Delete Session</Text>
+            <Text className="text-gray-700 mb-4 text-center">
+              Are you sure you want to delete
+              {session ? ` "${session.name}"` : ''}?
+              This will also delete all associated shots.
+            </Text>
+            <View className="flex-row space-x-3 mt-2">
+              <TargetButton
+                variant="secondary"
+                onPress={cancelDeleteSession}
+                disabled={deleteLoading}
+              >
+                <Text className="text-gray-700 font-semibold">Cancel</Text>
+              </TargetButton>
+              <TargetButton
+                variant="danger"
+                onPress={confirmDeleteSession}
+                disabled={deleteLoading}
+              >
+                <Text className="text-white font-semibold">
+                  {deleteLoading ? 'Deleting...' : 'Delete'}
+                </Text>
+              </TargetButton>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      <ScrollView className="flex-1 bg-gray-50">
+        {/* Breadcrumb Navigation */}
+      <Breadcrumb 
+        items={[
+          { label: 'Home', href: '/' },
+          { label: 'Sessions', href: '/sessions' },
+          { label: session.name }
+        ]}
+      />
+      
       {/* Header */}
       <View className="bg-white p-4 border-b border-gray-200">
         <View className="flex-row justify-between items-start">
@@ -164,6 +215,20 @@ export default function SessionDetailScreen() {
           </View>
         </TargetButton>
       </View>
+
+      {/* Home Navigation */}
+      <View className="p-4">
+        <TouchableOpacity
+          onPress={handleNavigateHome}
+          className="bg-blue-600 rounded-lg p-4 flex-row items-center justify-center"
+        >
+          <Home size={20} color="white" />
+          <Text className="text-white font-semibold ml-2">
+            Back to Home
+          </Text>
+        </TouchableOpacity>
+      </View>
     </ScrollView>
+    </>
   );
 }

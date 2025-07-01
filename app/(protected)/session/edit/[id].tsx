@@ -3,6 +3,8 @@ import { View, Alert } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Text } from '@/components/ui/text';
 import { SessionForm } from '@/components/forms/SessionForm';
+import { FloatingActionButton } from '@/components/ui/floating-action-button';
+import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { useSession, useUpdateSession } from '@/hooks/useSessions';
 import type { CreateSessionData } from '@/lib/types';
 
@@ -34,10 +36,26 @@ export default function EditSessionScreen() {
 
   return (
     <View className="flex-1 bg-white">
+      {/* Breadcrumb Navigation */}
+      <Breadcrumb 
+        items={[
+          { label: 'Home', href: '/' },
+          { label: 'Sessions', href: '/sessions' },
+          { label: session.name, href: `/session/${session.id}` },
+          { label: 'Edit' }
+        ]}
+      />
+      
       <SessionForm
         onSubmit={handleSubmit}
         initialData={session}
         isLoading={updateSessionMutation.isPending}
+      />
+      
+      {/* Quick navigation to home */}
+      <FloatingActionButton 
+        icon="home"
+        position="bottom-right"
       />
     </View>
   );

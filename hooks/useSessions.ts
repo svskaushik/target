@@ -148,10 +148,11 @@ export function useDeleteSession() {
     mutationFn: async (id: string) => {
       // Ensure user is authenticated
       if (!session?.user?.id) {
+        console.error('[Delete] No user id in session:', session);
         throw new Error('User must be authenticated to delete sessions');
       }
 
-      console.log('Deleting session:', id, 'for user:', session.user.id);
+      console.log('[Delete] MutationFn called for session:', id, 'user:', session.user.id);
       
       const { error } = await supabase
         .from('sessions')
@@ -160,11 +161,11 @@ export function useDeleteSession() {
         .eq('user_id', session.user.id); // Ensure user owns the session
         
       if (error) {
-        console.error('Error deleting session:', error);
+        console.error('[Delete] Supabase error:', error);
         throw new Error(`Failed to delete session: ${error.message}`);
       }
       
-      console.log('Session deleted successfully:', id);
+      console.log('[Delete] Session deleted successfully:', id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sessions'] });

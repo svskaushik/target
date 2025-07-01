@@ -179,3 +179,37 @@ export function useClearSessionShots() {
     },
   });
 }
+
+// New: Fetch total shots for the current user
+export function useTotalShots() {
+  const { session } = useAuth();
+  return useQuery({
+    queryKey: ['totalShots', session?.user?.id],
+    queryFn: async () => {
+      if (!session?.user?.id) return 0;
+      // First, get all session ids for this user
+      const { data: sessions, error: sessionError } = await supabase
+        .from('sessions')
+        .select('id')
+        .eq('user_id', session.user.id);
+      if (sessionError) {
+        console.error('Error fetching user sessions for total shots:', sessionError);
+        throw sessionError;
+      }
+      const sessionIds = (sessions || []).map((s: any) => s.id);
+      if (!sessionIds.length) return 0;
+      // Now count all shots for those session ids
+      const { count, error } = await supabase
+        .from('shot_placements')
+        .select('*', { count: 'exact', head: true })
+        .in('session_id', sessionIds);
+      if (error) {
+        console.error('Error fetching total shots:', error);
+        throw error;
+      }
+      return count || 0;
+    },
+    enabled: !!session?.user?.id,
+    staleTime: 60 * 1000,
+  });
+}

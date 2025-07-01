@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Alert } from 'react-native';
 import { router } from 'expo-router';
 import { TargetForm } from '@/components/forms/TargetForm';
+import { FloatingActionButton } from '@/components/ui/floating-action-button';
 import { useCreateTarget } from '@/hooks/useTargets';
 import type { CreateTargetData } from '@/lib/types';
 
@@ -24,6 +25,12 @@ export default function CreateTargetScreen() {
       <TargetForm
         onSubmit={handleSubmit}
         isLoading={createTargetMutation.isPending}
+      />
+      
+      {/* Quick navigation to home */}
+      <FloatingActionButton 
+        icon="home"
+        position="bottom-right"
       />
     </View>
   );
