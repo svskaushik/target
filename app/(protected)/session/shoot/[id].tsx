@@ -1,10 +1,6 @@
 import React, { useState } from "react";
 import { Switch } from "@/components/ui/switch";
 import { View, Modal, Platform } from "react-native";
-
-function isMobile() {
-  return Platform.OS === "ios" || Platform.OS === "android";
-}
 import { useLocalSearchParams, router } from "expo-router";
 import { Text } from "@/components/ui/text";
 import { TargetButton } from "@/components/ui/target-button";
@@ -19,15 +15,19 @@ import {
 import { useTargetTypes } from "@/hooks/useTargetConfig";
 import { Save, RotateCcw, Eye } from "lucide-react-native";
 
+function isMobile() {
+	return Platform.OS === "ios" || Platform.OS === "android";
+}
+
 export default function ShootingSessionScreen() {
-const { id } = useLocalSearchParams<{ id: string }>();
-const [shotCount, setShotCount] = useState(0);
-const [resetModalVisible, setResetModalVisible] = useState(false);
-const [resetLoading, setResetLoading] = useState(false);
-const [saveModalVisible, setSaveModalVisible] = useState(false);
-const [showPointsOnTarget, setShowPointsOnTarget] = useState(false);
-const [showScorecardModal, setShowScorecardModal] = useState(false);
-const [showSettingsModal, setShowSettingsModal] = useState(false);
+	const { id } = useLocalSearchParams<{ id: string }>();
+	const [shotCount, setShotCount] = useState(0);
+	const [resetModalVisible, setResetModalVisible] = useState(false);
+	const [resetLoading, setResetLoading] = useState(false);
+	const [saveModalVisible, setSaveModalVisible] = useState(false);
+	const [showPointsOnTarget, setShowPointsOnTarget] = useState(false);
+	const [showScorecardModal, setShowScorecardModal] = useState(false);
+	const [showSettingsModal, setShowSettingsModal] = useState(false);
 
 	const { data: session, isLoading: sessionLoading } = useSession(id!);
 	const { data: shots, isLoading: shotsLoading } = useShotPlacements(id!);
@@ -132,7 +132,7 @@ const [showSettingsModal, setShowSettingsModal] = useState(false);
 							Session Complete
 						</Text>
 						<Text className="text-gray-700 mb-4 text-center">
-							You've recorded {shots?.length || 0} shots. Save this session?
+							You&#39;ve recorded {shots?.length || 0} shots. Save this session?
 						</Text>
 						<View className="flex-row space-x-3 mt-2">
 							<TargetButton variant="secondary" onPress={cancelSaveSession}>
@@ -186,243 +186,259 @@ const [showSettingsModal, setShowSettingsModal] = useState(false);
 			</Modal>
 
 			<View className="flex-1 bg-white">
-{/* Header with Settings Icon */}
-<View className="bg-white px-4 py-3 border-b border-gray-200 flex-row justify-between items-center">
-  <View>
-    <Text className="text-lg font-bold text-gray-900">
-      {session.name}
-    </Text>
-    <Text className="text-gray-600">
-      {session.target?.name} • {session.target?.distance}m
-    </Text>
-    <Text className="text-blue-600 font-medium">
-      Shots: {shots?.length || 0}
-    </Text>
-  </View>
-  <TargetButton
-    variant="ghost"
-    className="ml-2"
-    onPress={() => setShowSettingsModal(true)}
-  >
-    <Text className="text-gray-700" style={{ fontSize: 26, fontWeight: "bold" }}>☰</Text>
-  </TargetButton>
-</View>
+				{/* Header with Settings Icon */}
+				<View className="bg-white px-4 py-3 border-b border-gray-200 flex-row justify-between items-center">
+					<View>
+						<Text className="text-lg font-bold text-gray-900">
+							{session.name}
+						</Text>
+						<Text className="text-gray-600">
+							{session.target?.name} • {session.target?.distance}m
+						</Text>
+						<Text className="text-blue-600 font-medium">
+							Shots: {shots?.length || 0}
+						</Text>
+					</View>
+					<TargetButton
+						variant="ghost"
+						className="ml-2"
+						onPress={() => setShowSettingsModal(true)}
+					>
+						<Text
+							className="text-gray-700"
+							style={{ fontSize: 26, fontWeight: "bold" }}
+						>
+							☰
+						</Text>
+					</TargetButton>
+				</View>
 
-{/* Settings Modal */}
-<Modal
-  visible={showSettingsModal}
-  transparent
-  animationType="fade"
-  onRequestClose={() => setShowSettingsModal(false)}
->
-  <View className="flex-1 justify-center items-center bg-black/40">
-    <View className="bg-white p-6 rounded-lg w-80 max-w-full items-center">
-      <Text className="text-lg font-bold text-gray-900 mb-4">
-        Session Settings
-      </Text>
-      <View className="flex-row items-center mb-2">
-        <Switch
-          checked={showPointsOnTarget}
-          onCheckedChange={setShowPointsOnTarget}
-          className="mr-2"
-        />
-        <Text className="text-gray-700">Show shot points on target</Text>
-      </View>
-      <TargetButton
-        variant="secondary"
-        className="mt-4"
-        onPress={() => setShowSettingsModal(false)}
-      >
-        <Text className="text-blue-700 font-semibold">Close</Text>
-      </TargetButton>
-    </View>
-  </View>
-</Modal>
+				{/* Settings Modal */}
+				<Modal
+					visible={showSettingsModal}
+					transparent
+					animationType="fade"
+					onRequestClose={() => setShowSettingsModal(false)}
+				>
+					<View className="flex-1 justify-center items-center bg-black/40">
+						<View className="bg-white p-6 rounded-lg w-80 max-w-full items-center">
+							<Text className="text-lg font-bold text-gray-900 mb-4">
+								Session Settings
+							</Text>
+							<View className="flex-row items-center mb-2">
+								<Switch
+									checked={showPointsOnTarget}
+									onCheckedChange={setShowPointsOnTarget}
+									className="mr-2"
+								/>
+								<Text className="text-gray-700">
+									Show shot points on target
+								</Text>
+							</View>
+							<TargetButton
+								variant="secondary"
+								className="mt-4"
+								onPress={() => setShowSettingsModal(false)}
+							>
+								<Text className="text-blue-700 font-semibold">Close</Text>
+							</TargetButton>
+						</View>
+					</View>
+				</Modal>
 
-{/* Target Canvas */}
-<View className="flex-1 justify-center items-center">
-  <View style={{ width: "120%", aspectRatio: 1, justifyContent: "center", alignItems: "center" }}>
-    <TargetCanvas
-      targetImageUrl={session.target?.image_url}
-      shots={shots || []}
-      onShotPlaced={handleShotPlaced}
-      readonly={false}
-      showPoints={showPointsOnTarget}
-      zoneDefinitions={zoneDefinitions}
-    />
-  </View>
-</View>
-{/* Compact Score Summary */}
-<View className="px-4 pb-2 flex-row justify-between items-center">
-  <View>
-    <Text className="text-base font-semibold text-gray-900 mb-1">
-      Last Shot
-    </Text>
-    {shots && shots.length > 0 ? (
-      (() => {
-        const shot = shots[shots.length - 1];
-        const width = 320;
-        const height = 320;
-        const cx = (shot.x_coordinate / 100) * width;
-        const cy = (shot.y_coordinate / 100) * height;
-        let score = 0;
-        for (const zone of zoneDefinitions) {
-          if (zone.shape === "circle") {
-            const centerX = width / 2;
-            const centerY = height / 2;
-            const dx = cx - centerX;
-            const dy = cy - centerY;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            const r = (width / 2) * (zone.params.radiusRatio ?? 1);
-            if (distance <= r) {
-              score = Math.max(score, zone.score_value);
-            }
-          }
-        }
-        return (
-          <Text className="text-blue-700 font-semibold">
-            #{shots.length}: {score} pts
-          </Text>
-        );
-      })()
-    ) : (
-      <Text className="text-gray-400 italic">No shots yet.</Text>
-    )}
-  </View>
-  <View>
-    <Text className="text-base font-semibold text-gray-900 mb-1">
-      Total
-    </Text>
-    <Text className="text-green-700 font-bold">
-      {shots && shots.length > 0
-        ? shots.reduce((sum, shot) => {
-            const width = 320;
-            const height = 320;
-            const cx = (shot.x_coordinate / 100) * width;
-            const cy = (shot.y_coordinate / 100) * height;
-            let score = 0;
-            for (const zone of zoneDefinitions) {
-              if (zone.shape === "circle") {
-                const centerX = width / 2;
-                const centerY = height / 2;
-                const dx = cx - centerX;
-                const dy = cy - centerY;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                const r = (width / 2) * (zone.params.radiusRatio ?? 1);
-                if (distance <= r) {
-                  score = Math.max(score, zone.score_value);
-                }
-              }
-            }
-            return sum + score;
-          }, 0)
-        : 0}{" "}
-      pts
-    </Text>
-  </View>
-  <TargetButton
-    variant="secondary"
-    className="ml-2"
-    onPress={() => setShowScorecardModal(true)}
-  >
-    <Text className="text-blue-700 font-semibold">Expand</Text>
-  </TargetButton>
-</View>
+				{/* Target Canvas */}
+				<View className="flex-1 justify-center items-center">
+					<View
+						style={{
+							width: "120%",
+							aspectRatio: 1,
+							justifyContent: "center",
+							alignItems: "center",
+						}}
+					>
+						<TargetCanvas
+							targetImageUrl={session.target?.image_url}
+							shots={shots || []}
+							onShotPlaced={handleShotPlaced}
+							readonly={false}
+							showPoints={showPointsOnTarget}
+							zoneDefinitions={zoneDefinitions}
+						/>
+					</View>
+				</View>
+				{/* Compact Score Summary */}
+				<View className="px-4 pb-2 flex-row justify-between items-center">
+					<View>
+						<Text className="text-base font-semibold text-gray-900 mb-1">
+							Last Shot
+						</Text>
+						{shots && shots.length > 0 ? (
+							(() => {
+								const shot = shots[shots.length - 1];
+								const width = 320;
+								const height = 320;
+								const cx = (shot.x_coordinate / 100) * width;
+								const cy = (shot.y_coordinate / 100) * height;
+								let score = 0;
+								for (const zone of zoneDefinitions) {
+									if (zone.shape === "circle") {
+										const centerX = width / 2;
+										const centerY = height / 2;
+										const dx = cx - centerX;
+										const dy = cy - centerY;
+										const distance = Math.sqrt(dx * dx + dy * dy);
+										const r = (width / 2) * (zone.params.radiusRatio ?? 1);
+										if (distance <= r) {
+											score = Math.max(score, zone.score_value);
+										}
+									}
+								}
+								return (
+									<Text className="text-blue-700 font-semibold">
+										#{shots.length}: {score} pts
+									</Text>
+								);
+							})()
+						) : (
+							<Text className="text-gray-400 italic">No shots yet.</Text>
+						)}
+					</View>
+					<View>
+						<Text className="text-base font-semibold text-gray-900 mb-1">
+							Total
+						</Text>
+						<Text className="text-green-700 font-bold">
+							{shots && shots.length > 0
+								? shots.reduce((sum, shot) => {
+										const width = 320;
+										const height = 320;
+										const cx = (shot.x_coordinate / 100) * width;
+										const cy = (shot.y_coordinate / 100) * height;
+										let score = 0;
+										for (const zone of zoneDefinitions) {
+											if (zone.shape === "circle") {
+												const centerX = width / 2;
+												const centerY = height / 2;
+												const dx = cx - centerX;
+												const dy = cy - centerY;
+												const distance = Math.sqrt(dx * dx + dy * dy);
+												const r = (width / 2) * (zone.params.radiusRatio ?? 1);
+												if (distance <= r) {
+													score = Math.max(score, zone.score_value);
+												}
+											}
+										}
+										return sum + score;
+									}, 0)
+								: 0}{" "}
+							pts
+						</Text>
+					</View>
+					<TargetButton
+						variant="secondary"
+						className="ml-2"
+						onPress={() => setShowScorecardModal(true)}
+					>
+						<Text className="text-blue-700 font-semibold">Expand</Text>
+					</TargetButton>
+				</View>
 
-{/* Scorecard Modal */}
-<Modal
-  visible={showScorecardModal}
-  transparent
-  animationType="slide"
-  onRequestClose={() => setShowScorecardModal(false)}
->
-  <View className="flex-1 justify-end bg-black/40">
-    <View className="bg-white rounded-t-2xl p-4 max-h-[70%]">
-      <Text className="text-lg font-bold text-gray-900 mb-2">
-        Scorecard
-      </Text>
-      <View className="bg-gray-50 rounded-lg p-2">
-        {(shots || []).length === 0 ? (
-          <Text className="text-gray-400 italic">No shots yet.</Text>
-        ) : (
-          <>
-            {(shots || []).map((shot, idx) => {
-              const width = 320;
-              const height = 320;
-              const cx = (shot.x_coordinate / 100) * width;
-              const cy = (shot.y_coordinate / 100) * height;
-              let score = 0;
-              for (const zone of zoneDefinitions) {
-                if (zone.shape === "circle") {
-                  const centerX = width / 2;
-                  const centerY = height / 2;
-                  const dx = cx - centerX;
-                  const dy = cy - centerY;
-                  const distance = Math.sqrt(dx * dx + dy * dy);
-                  const r = (width / 2) * (zone.params.radiusRatio ?? 1);
-                  if (distance <= r) {
-                    score = Math.max(score, zone.score_value);
-                  }
-                }
-              }
-              return (
-                <View
-                  key={shot.id}
-                  className="flex-row justify-between items-center py-1 px-2 border-b border-gray-200 last:border-b-0"
-                >
-                  <Text className="text-gray-700 font-medium">
-                    #{idx + 1}
-                  </Text>
-                  <Text className="text-blue-700 font-semibold">
-                    {score} pts
-                  </Text>
-                </View>
-              );
-            })}
-            {/* Running total */}
-            <View className="flex-row justify-between items-center pt-2 mt-2 border-t border-gray-300">
-              <Text className="text-gray-900 font-bold">Total</Text>
-              <Text className="text-green-700 font-bold">
-                {shots && shots.length > 0
-                  ? shots.reduce((sum, shot) => {
-                      const width = 320;
-                      const height = 320;
-                      const cx = (shot.x_coordinate / 100) * width;
-                      const cy = (shot.y_coordinate / 100) * height;
-                      let score = 0;
-                      for (const zone of zoneDefinitions) {
-                        if (zone.shape === "circle") {
-                          const centerX = width / 2;
-                          const centerY = height / 2;
-                          const dx = cx - centerX;
-                          const dy = cy - centerY;
-                          const distance = Math.sqrt(dx * dx + dy * dy);
-                          const r =
-                            (width / 2) * (zone.params.radiusRatio ?? 1);
-                          if (distance <= r) {
-                            score = Math.max(score, zone.score_value);
-                          }
-                        }
-                      }
-                      return sum + score;
-                    }, 0)
-                  : 0}{" "}
-                pts
-              </Text>
-            </View>
-          </>
-        )}
-      </View>
-      <TargetButton
-        variant="secondary"
-        className="mt-4"
-        onPress={() => setShowScorecardModal(false)}
-      >
-        <Text className="text-blue-700 font-semibold">Close</Text>
-      </TargetButton>
-    </View>
-  </View>
-</Modal>
+				{/* Scorecard Modal */}
+				<Modal
+					visible={showScorecardModal}
+					transparent
+					animationType="slide"
+					onRequestClose={() => setShowScorecardModal(false)}
+				>
+					<View className="flex-1 justify-end bg-black/40">
+						<View className="bg-white rounded-t-2xl p-4 max-h-[70%]">
+							<Text className="text-lg font-bold text-gray-900 mb-2">
+								Scorecard
+							</Text>
+							<View className="bg-gray-50 rounded-lg p-2">
+								{(shots || []).length === 0 ? (
+									<Text className="text-gray-400 italic">No shots yet.</Text>
+								) : (
+									<>
+										{(shots || []).map((shot, idx) => {
+											const width = 320;
+											const height = 320;
+											const cx = (shot.x_coordinate / 100) * width;
+											const cy = (shot.y_coordinate / 100) * height;
+											let score = 0;
+											for (const zone of zoneDefinitions) {
+												if (zone.shape === "circle") {
+													const centerX = width / 2;
+													const centerY = height / 2;
+													const dx = cx - centerX;
+													const dy = cy - centerY;
+													const distance = Math.sqrt(dx * dx + dy * dy);
+													const r =
+														(width / 2) * (zone.params.radiusRatio ?? 1);
+													if (distance <= r) {
+														score = Math.max(score, zone.score_value);
+													}
+												}
+											}
+											return (
+												<View
+													key={shot.id}
+													className="flex-row justify-between items-center py-1 px-2 border-b border-gray-200 last:border-b-0"
+												>
+													<Text className="text-gray-700 font-medium">
+														#{idx + 1}
+													</Text>
+													<Text className="text-blue-700 font-semibold">
+														{score} pts
+													</Text>
+												</View>
+											);
+										})}
+										{/* Running total */}
+										<View className="flex-row justify-between items-center pt-2 mt-2 border-t border-gray-300">
+											<Text className="text-gray-900 font-bold">Total</Text>
+											<Text className="text-green-700 font-bold">
+												{shots && shots.length > 0
+													? shots.reduce((sum, shot) => {
+															const width = 320;
+															const height = 320;
+															const cx = (shot.x_coordinate / 100) * width;
+															const cy = (shot.y_coordinate / 100) * height;
+															let score = 0;
+															for (const zone of zoneDefinitions) {
+																if (zone.shape === "circle") {
+																	const centerX = width / 2;
+																	const centerY = height / 2;
+																	const dx = cx - centerX;
+																	const dy = cy - centerY;
+																	const distance = Math.sqrt(dx * dx + dy * dy);
+																	const r =
+																		(width / 2) *
+																		(zone.params.radiusRatio ?? 1);
+																	if (distance <= r) {
+																		score = Math.max(score, zone.score_value);
+																	}
+																}
+															}
+															return sum + score;
+														}, 0)
+													: 0}{" "}
+												pts
+											</Text>
+										</View>
+									</>
+								)}
+							</View>
+							<TargetButton
+								variant="secondary"
+								className="mt-4"
+								onPress={() => setShowScorecardModal(false)}
+							>
+								<Text className="text-blue-700 font-semibold">Close</Text>
+							</TargetButton>
+						</View>
+					</View>
+				</Modal>
 
 				{/* Controls */}
 				<View className="p-4 bg-white border-t border-gray-200">
@@ -464,11 +480,11 @@ const [showSettingsModal, setShowSettingsModal] = useState(false);
 					</TargetButton> */}
 				</View>
 
-{/* Quick navigation to home */}
-{/* {!isMobile() && (
+				{/* Quick navigation to home */}
+				{/* {!isMobile() && (
   <FloatingActionButton icon="home" position="bottom-left" />
 )} */}
-</View>
+			</View>
 		</>
 	);
 }

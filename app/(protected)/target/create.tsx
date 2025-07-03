@@ -9,14 +9,14 @@ import type { CreateTargetData } from "@/lib/types";
 export default function CreateTargetScreen() {
 	const createTargetMutation = useCreateTarget();
 
-const handleSubmit = async (data: CreateTargetData) => {
-  try {
-    const newTarget = await createTargetMutation.mutateAsync(data);
-    router.replace(`/target/${newTarget.id}`);
-  } catch (error) {
-    Alert.alert("Error", "Failed to create target. Please try again.");
-  }
-};
+	const handleSubmit = async (data: CreateTargetData) => {
+		try {
+			const newTarget = await createTargetMutation.mutateAsync(data);
+			router.replace(`/target/${newTarget.id}`);
+		} catch (error) {
+			Alert.alert("Error", "Failed to create target. Please try again.");
+		}
+	};
 
 	return (
 		<View className="flex-1 bg-white">
