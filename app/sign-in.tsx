@@ -42,16 +42,14 @@ export default function SignIn() {
 				Alert.alert(
 					"Sign In Failed",
 					result.error || "Invalid email or password. Please try again.",
-					[{ text: "OK" }]
+					[{ text: "OK" }],
 				);
 			}
 		} catch (error: any) {
 			console.error("Sign in error:", error);
-			Alert.alert(
-				"Error",
-				"An unexpected error occurred. Please try again.",
-				[{ text: "OK" }]
-			);
+			Alert.alert("Error", "An unexpected error occurred. Please try again.", [
+				{ text: "OK" },
+			]);
 		}
 	}
 
@@ -63,7 +61,7 @@ export default function SignIn() {
 				Alert.alert(
 					"Google Sign In Failed",
 					result.error || "Failed to sign in with Google. Please try again.",
-					[{ text: "OK" }]
+					[{ text: "OK" }],
 				);
 			}
 			// Success will be handled by the auth state change
@@ -72,7 +70,7 @@ export default function SignIn() {
 			Alert.alert(
 				"Error",
 				"An unexpected error occurred with Google sign in. Please try again.",
-				[{ text: "OK" }]
+				[{ text: "OK" }],
 			);
 		}
 	}
@@ -132,7 +130,7 @@ export default function SignIn() {
 						<Text>Sign In</Text>
 					)}
 				</Button>
-				
+
 				<View className="flex-row items-center my-4">
 					<View className="flex-1 h-px bg-border" />
 					<Text className="mx-4 text-muted-foreground">or</Text>

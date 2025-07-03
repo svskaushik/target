@@ -21,8 +21,18 @@ type AuthState = {
 	initialized: boolean;
 	session: Session | null;
 	loading: boolean;
-	signUp: (email: string, password: string) => Promise<{ success: boolean; error?: string; needsVerification?: boolean }>;
-	signIn: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+	signUp: (
+		email: string,
+		password: string,
+	) => Promise<{
+		success: boolean;
+		error?: string;
+		needsVerification?: boolean;
+	}>;
+	signIn: (
+		email: string,
+		password: string,
+	) => Promise<{ success: boolean; error?: string }>;
 	signInWithGoogle: () => Promise<{ success: boolean; error?: string }>;
 	signOut: () => Promise<{ success: boolean; error?: string }>;
 };
@@ -57,9 +67,9 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
 			if (error) {
 				console.error("Error signing up:", error);
-				return { 
-					success: false, 
-					error: error.message || "An error occurred during sign up" 
+				return {
+					success: false,
+					error: error.message || "An error occurred during sign up",
 				};
 			}
 
@@ -69,22 +79,22 @@ export function AuthProvider({ children }: PropsWithChildren) {
 				return { success: true };
 			} else if (data.user && !data.user.email_confirmed_at) {
 				console.log("User signed up, email verification required:", data.user);
-				return { 
-					success: true, 
-					needsVerification: true 
+				return {
+					success: true,
+					needsVerification: true,
 				};
 			} else {
 				console.log("No user returned from sign up");
-				return { 
-					success: false, 
-					error: "Account creation failed. Please try again." 
+				return {
+					success: false,
+					error: "Account creation failed. Please try again.",
 				};
 			}
 		} catch (error) {
 			console.error("Sign up error:", error);
-			return { 
-				success: false, 
-				error: "An unexpected error occurred. Please try again." 
+			return {
+				success: false,
+				error: "An unexpected error occurred. Please try again.",
 			};
 		} finally {
 			setLoading(false);
@@ -101,9 +111,9 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
 			if (error) {
 				console.error("Error signing in:", error);
-				return { 
-					success: false, 
-					error: error.message || "Invalid email or password" 
+				return {
+					success: false,
+					error: error.message || "Invalid email or password",
 				};
 			}
 
@@ -113,16 +123,16 @@ export function AuthProvider({ children }: PropsWithChildren) {
 				return { success: true };
 			} else {
 				console.log("No session returned from sign in");
-				return { 
-					success: false, 
-					error: "Sign in failed. Please check your credentials." 
+				return {
+					success: false,
+					error: "Sign in failed. Please check your credentials.",
 				};
 			}
 		} catch (error) {
 			console.error("Sign in error:", error);
-			return { 
-				success: false, 
-				error: "An unexpected error occurred. Please try again." 
+			return {
+				success: false,
+				error: "An unexpected error occurred. Please try again.",
 			};
 		} finally {
 			setLoading(false);
@@ -132,58 +142,61 @@ export function AuthProvider({ children }: PropsWithChildren) {
 	const signInWithGoogle = async () => {
 		try {
 			setLoading(true);
-			
+
 			// Get the current host dynamically for better Docker compatibility
 			const getRedirectURL = () => {
-				if (typeof window !== 'undefined') {
+				if (typeof window !== "undefined") {
 					// Web environment - use current origin
 					return `${window.location.origin}/auth/callback`;
 				}
 				// Fallback for non-web environments
-				return process.env.EXPO_PUBLIC_AUTH_CALLBACK_URL || 'http://localhost:8081/auth/callback';
+				return (
+					process.env.EXPO_PUBLIC_AUTH_CALLBACK_URL ||
+					"http://localhost:8081/auth/callback"
+				);
 			};
-			
+
 			const redirectTo = getRedirectURL();
-			console.log('Google OAuth redirect URL:', redirectTo);
-			
+			console.log("Google OAuth redirect URL:", redirectTo);
+
 			// Use Supabase's OAuth flow with PKCE
 			const { data, error } = await supabase.auth.signInWithOAuth({
-				provider: 'google',
+				provider: "google",
 				options: {
-					scopes: 'email profile',
+					scopes: "email profile",
 					redirectTo,
 					queryParams: {
-						access_type: 'offline',
-						prompt: 'consent',
-					}
-				}
+						access_type: "offline",
+						prompt: "consent",
+					},
+				},
 			});
 
 			if (error) {
 				console.error("Error signing in with Google:", error);
-				return { 
-					success: false, 
-					error: error.message || "Google sign in failed" 
+				return {
+					success: false,
+					error: error.message || "Google sign in failed",
 				};
 			}
 
 			if (data?.url) {
-				console.log('Redirecting to Google OAuth URL:', data.url);
+				console.log("Redirecting to Google OAuth URL:", data.url);
 				// The redirect will be handled automatically by Supabase
 				// No need for manual window.location.href since we removed skipBrowserRedirect
 				return { success: true };
 			} else {
 				console.error("No authorization URL received from Supabase");
-				return { 
-					success: false, 
-					error: "Failed to get authorization URL" 
+				return {
+					success: false,
+					error: "Failed to get authorization URL",
 				};
 			}
 		} catch (error) {
 			console.error("Google sign in error:", error);
-			return { 
-				success: false, 
-				error: "An unexpected error occurred with Google sign in." 
+			return {
+				success: false,
+				error: "An unexpected error occurred with Google sign in.",
 			};
 		} finally {
 			setLoading(false);
@@ -197,9 +210,9 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
 			if (error) {
 				console.error("Error signing out:", error);
-				return { 
-					success: false, 
-					error: error.message || "Sign out failed" 
+				return {
+					success: false,
+					error: error.message || "Sign out failed",
 				};
 			}
 
@@ -207,9 +220,9 @@ export function AuthProvider({ children }: PropsWithChildren) {
 			return { success: true };
 		} catch (error) {
 			console.error("Sign out error:", error);
-			return { 
-				success: false, 
-				error: "An unexpected error occurred during sign out." 
+			return {
+				success: false,
+				error: "An unexpected error occurred during sign out.",
 			};
 		} finally {
 			setLoading(false);
@@ -226,41 +239,55 @@ export function AuthProvider({ children }: PropsWithChildren) {
 		// Initialize authentication state
 		const initializeAuth = async () => {
 			try {
-				console.log('Initializing authentication...');
-				const { data: { session }, error } = await supabase.auth.getSession();
-				
+				console.log("Initializing authentication...");
+				const {
+					data: { session },
+					error,
+				} = await supabase.auth.getSession();
+
 				if (error) {
-					console.error('Error getting initial session:', error);
+					console.error("Error getting initial session:", error);
 				} else {
-					console.log('Initial session:', session?.user?.email ? 'Found user: ' + session.user.email : 'No session');
+					console.log(
+						"Initial session:",
+						session?.user?.email
+							? "Found user: " + session.user.email
+							: "No session",
+					);
 					setSession(session);
 				}
 			} catch (error) {
-				console.error('Failed to initialize auth:', error);
+				console.error("Failed to initialize auth:", error);
 			} finally {
 				setInitialized(true);
 			}
 		};
 
 		// Set up auth state listener
-		const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-			console.log('Auth state change:', event, session?.user?.email ? `User: ${session.user.email}` : 'No user');
+		const {
+			data: { subscription },
+		} = supabase.auth.onAuthStateChange((event, session) => {
+			console.log(
+				"Auth state change:",
+				event,
+				session?.user?.email ? `User: ${session.user.email}` : "No user",
+			);
 			setSession(session);
-			
+
 			// Handle specific authentication events
-			if (event === 'SIGNED_IN' && session?.user) {
-				console.log('User successfully signed in:', session.user.email);
-				console.log('Session established, should redirect to protected area');
+			if (event === "SIGNED_IN" && session?.user) {
+				console.log("User successfully signed in:", session.user.email);
+				console.log("Session established, should redirect to protected area");
 				// Additional debugging for PKCE flow
 				if (session.provider_token) {
-					console.log('OAuth provider token received - PKCE flow successful');
+					console.log("OAuth provider token received - PKCE flow successful");
 				}
-			} else if (event === 'SIGNED_OUT') {
-				console.log('User signed out');
-			} else if (event === 'TOKEN_REFRESHED' && session?.user) {
-				console.log('Token refreshed for user:', session.user.email);
-			} else if (event === 'USER_UPDATED' && session?.user) {
-				console.log('User updated:', session.user.email);
+			} else if (event === "SIGNED_OUT") {
+				console.log("User signed out");
+			} else if (event === "TOKEN_REFRESHED" && session?.user) {
+				console.log("Token refreshed for user:", session.user.email);
+			} else if (event === "USER_UPDATED" && session?.user) {
+				console.log("User updated:", session.user.email);
 			}
 		});
 
@@ -275,29 +302,46 @@ export function AuthProvider({ children }: PropsWithChildren) {
 	useEffect(() => {
 		if (initialized) {
 			SplashScreen.hideAsync();
-			
+
 			// Prevent rapid navigation loops - add debounce
 			const now = Date.now();
 			if (now - lastNavigationTime < 100) {
 				return;
 			}
-			
+
 			// Ensure pathname is properly defined before using it
-			const currentPath = pathname || '';
-			
-			// Don't interfere with authentication pages or OAuth callback processing
-			if (currentPath.includes('/auth/callback') || 
-				currentPath.includes('/sign-in') || 
-				currentPath.includes('/sign-up')) {
-				console.log('Skipping navigation - on auth page:', currentPath);
+			const currentPath = pathname || "";
+
+			if (
+				currentPath.includes("/auth/callback") ||
+				currentPath.includes("/sign-up")
+			) {
+				console.log("Skipping navigation - on auth page:", currentPath);
 				return;
 			}
-			
+
+			// Redirect authenticated users away from /sign-in
+			if (session && currentPath === "/sign-in") {
+				console.log(
+					"Redirecting authenticated user from /sign-in to protected area",
+				);
+				setLastNavigationTime(now);
+				try {
+					router.replace("/(protected)/(tabs)");
+				} catch (error) {
+					console.error(
+						"Navigation error when redirecting authenticated user from /sign-in:",
+						error,
+					);
+				}
+				return;
+			}
+
 			// Don't interfere with tab navigation within protected area
-			if (currentPath.startsWith('/(protected)')) {
+			if (currentPath.startsWith("/(protected)")) {
 				return;
 			}
-			
+
 			if (AUTH_DISABLED) {
 				// Always route to home if auth is disabled
 				setLastNavigationTime(now);
@@ -308,28 +352,48 @@ export function AuthProvider({ children }: PropsWithChildren) {
 				}
 				return;
 			}
-			
+
 			if (session) {
 				// User is authenticated, redirect to protected area only from public pages
-				if (currentPath === '/welcome' || currentPath === '/' || currentPath === '') {
-					console.log('Redirecting authenticated user to protected area from:', currentPath);
+				if (
+					currentPath === "/welcome" ||
+					currentPath === "/" ||
+					currentPath === ""
+				) {
+					console.log(
+						"Redirecting authenticated user to protected area from:",
+						currentPath,
+					);
 					setLastNavigationTime(now);
 					try {
 						router.replace("/(protected)/(tabs)");
 					} catch (error) {
-						console.error("Navigation error when redirecting authenticated user:", error);
+						console.error(
+							"Navigation error when redirecting authenticated user:",
+							error,
+						);
 					}
 				}
 			} else {
 				// User is not authenticated, redirect to welcome from any non-auth page
-				if (currentPath !== '/welcome' && currentPath !== '/sign-in' && currentPath !== '/sign-up' && 
-					!currentPath.includes('/auth/callback')) {
-					console.log('Redirecting unauthenticated user to welcome from:', currentPath);
+				if (
+					currentPath !== "/welcome" &&
+					currentPath !== "/sign-in" &&
+					currentPath !== "/sign-up" &&
+					!currentPath.includes("/auth/callback")
+				) {
+					console.log(
+						"Redirecting unauthenticated user to welcome from:",
+						currentPath,
+					);
 					setLastNavigationTime(now);
 					try {
 						router.replace("/welcome");
 					} catch (error) {
-						console.error("Navigation error when redirecting unauthenticated user:", error);
+						console.error(
+							"Navigation error when redirecting unauthenticated user:",
+							error,
+						);
 					}
 				}
 			}
