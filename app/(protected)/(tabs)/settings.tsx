@@ -19,7 +19,7 @@ export default function Settings() {
 				Alert.alert(
 					"Sign Out Failed",
 					result.error || "Failed to sign out. Please try again.",
-					[{ text: "OK" }]
+					[{ text: "OK" }],
 				);
 			}
 			// Success will be handled by the auth state change
@@ -28,7 +28,7 @@ export default function Settings() {
 			Alert.alert(
 				"Error",
 				"An unexpected error occurred during sign out. Please try again.",
-				[{ text: "OK" }]
+				[{ text: "OK" }],
 			);
 		} finally {
 			setSigningOut(false);
@@ -39,7 +39,7 @@ export default function Settings() {
 		<View className="flex-1 bg-background p-4">
 			<View className="flex-1 justify-center items-center gap-y-6">
 				<H1 className="text-center text-2xl">Settings</H1>
-				
+
 				{session && (
 					<View className="items-center gap-y-2 mb-8">
 						<Text className="text-lg font-medium">Signed in as:</Text>

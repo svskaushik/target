@@ -24,7 +24,8 @@ export default function WelcomeScreen() {
 				<View className="items-center gap-y-3">
 					<H1 className="text-center text-3xl font-bold">Target Sheet</H1>
 					<Muted className="text-center text-lg max-w-sm leading-relaxed">
-						Track your shooting progress with precision. Record sessions, analyze shots, and improve your accuracy.
+						Track your shooting progress with precision. Record sessions,
+						analyze shots, and improve your accuracy.
 					</Muted>
 				</View>
 			</View>

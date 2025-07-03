@@ -57,7 +57,7 @@ export default function SignUp() {
 
 			if (result.success) {
 				form.reset();
-				
+
 				if (result.needsVerification) {
 					Alert.alert(
 						"Check Your Email",
@@ -67,7 +67,7 @@ export default function SignUp() {
 								text: "OK",
 								onPress: () => router.push("/sign-in"),
 							},
-						]
+						],
 					);
 				} else {
 					// User is signed up and authenticated
@@ -79,23 +79,21 @@ export default function SignUp() {
 								text: "OK",
 								// Don't manually navigate - let AuthProvider handle it
 							},
-						]
+						],
 					);
 				}
 			} else {
 				Alert.alert(
 					"Sign Up Failed",
 					result.error || "An error occurred during sign up. Please try again.",
-					[{ text: "OK" }]
+					[{ text: "OK" }],
 				);
 			}
 		} catch (error: any) {
 			console.error("Sign up error:", error);
-			Alert.alert(
-				"Error",
-				"An unexpected error occurred. Please try again.",
-				[{ text: "OK" }]
-			);
+			Alert.alert("Error", "An unexpected error occurred. Please try again.", [
+				{ text: "OK" },
+			]);
 		}
 	}
 

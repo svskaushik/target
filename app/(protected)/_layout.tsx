@@ -35,78 +35,78 @@ export default function ProtectedLayout() {
 						? colors.dark.foreground
 						: colors.light.foreground,
 				headerTitleStyle: {
-					fontWeight: '600',
+					fontWeight: "600",
 				},
 			}}
 		>
 			{/* Main tabs - no header shown as tabs have their own navigation */}
-			<Stack.Screen 
-				name="(tabs)" 
-				options={{ 
-					headerShown: false 
-				}} 
+			<Stack.Screen
+				name="(tabs)"
+				options={{
+					headerShown: false,
+				}}
 			/>
-			
+
 			{/* Target screens */}
-			<Stack.Screen 
-				name="target/create" 
-				options={{ 
+			<Stack.Screen
+				name="target/create"
+				options={{
 					title: "Create Target",
 					presentation: "card",
-				}} 
+				}}
 			/>
-			<Stack.Screen 
-				name="target/[id]" 
-				options={{ 
+			<Stack.Screen
+				name="target/[id]"
+				options={{
 					title: "Target Details",
 					presentation: "card",
-				}} 
+				}}
 			/>
-			<Stack.Screen 
-				name="target/edit/[id]" 
-				options={{ 
+			<Stack.Screen
+				name="target/edit/[id]"
+				options={{
 					title: "Edit Target",
 					presentation: "modal",
-				}} 
+				}}
 			/>
-			
+
 			{/* Session screens */}
-			<Stack.Screen 
-				name="session/create" 
-				options={{ 
+			<Stack.Screen
+				name="session/create"
+				options={{
 					title: "Create Session",
 					presentation: "card",
-				}} 
+				}}
 			/>
-			<Stack.Screen 
-				name="session/[id]" 
-				options={{ 
+			<Stack.Screen
+				name="session/[id]"
+				options={{
 					title: "Session Details",
 					presentation: "card",
-				}} 
+				}}
 			/>
-			<Stack.Screen 
-				name="session/edit/[id]" 
-				options={{ 
+			<Stack.Screen
+				name="session/edit/[id]"
+				options={{
 					title: "Edit Session",
 					presentation: "modal",
-				}} 
+				}}
 			/>
-			<Stack.Screen 
-				name="session/shoot/[id]" 
-				options={{ 
+			<Stack.Screen
+				name="session/shoot/[id]"
+				options={{
 					title: "Shooting Session",
 					presentation: "card",
-				}} 
+				}}
 			/>
-			
+
 			{/* Modal screen */}
-			<Stack.Screen 
-				name="modal" 
-				options={{ 
+			<Stack.Screen
+				name="modal"
+				options={{
 					presentation: "modal",
 					title: "Modal",
-				}} 
+				}}
 			/>
 		</Stack>
 	);

@@ -14,7 +14,7 @@ web-build/
 .env.local
 ios/
 
-.cursorrules
+.clinerules
 
 # macOS
 .DS_Store
