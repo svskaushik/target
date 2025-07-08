@@ -19,30 +19,38 @@ ALTER TABLE targets ENABLE ROW LEVEL SECURITY;
 Then create the following policies:
 
 #### SELECT Policy
+
 Allow users to view only their own targets:
+
 ```sql
 CREATE POLICY "Users can view their own targets" ON targets
 FOR SELECT USING ( (SELECT auth.uid()) = user_id );
 ```
 
 #### INSERT Policy
+
 Allow users to create targets for themselves:
+
 ```sql
 CREATE POLICY "Users can create their own targets" ON targets
 FOR INSERT WITH CHECK ( (SELECT auth.uid()) = user_id );
 ```
 
 #### UPDATE Policy
+
 Allow users to update only their own targets:
+
 ```sql
 CREATE POLICY "Users can update their own targets" ON targets
-FOR UPDATE 
+FOR UPDATE
 USING ( (SELECT auth.uid()) = user_id )
 WITH CHECK ( (SELECT auth.uid()) = user_id );
 ```
 
 #### DELETE Policy
+
 Allow users to delete only their own targets:
+
 ```sql
 CREATE POLICY "Users can delete their own targets" ON targets
 FOR DELETE USING ( (SELECT auth.uid()) = user_id );
@@ -51,6 +59,7 @@ FOR DELETE USING ( (SELECT auth.uid()) = user_id );
 ### 2. Sessions Table
 
 Enable RLS:
+
 ```sql
 ALTER TABLE sessions ENABLE ROW LEVEL SECURITY;
 ```
@@ -58,26 +67,30 @@ ALTER TABLE sessions ENABLE ROW LEVEL SECURITY;
 Create policies:
 
 #### SELECT Policy
+
 ```sql
 CREATE POLICY "Users can view their own sessions" ON sessions
 FOR SELECT USING ( (SELECT auth.uid()) = user_id );
 ```
 
 #### INSERT Policy
+
 ```sql
 CREATE POLICY "Users can create their own sessions" ON sessions
 FOR INSERT WITH CHECK ( (SELECT auth.uid()) = user_id );
 ```
 
 #### UPDATE Policy
+
 ```sql
 CREATE POLICY "Users can update their own sessions" ON sessions
-FOR UPDATE 
+FOR UPDATE
 USING ( (SELECT auth.uid()) = user_id )
 WITH CHECK ( (SELECT auth.uid()) = user_id );
 ```
 
 #### DELETE Policy
+
 ```sql
 CREATE POLICY "Users can delete their own sessions" ON sessions
 FOR DELETE USING ( (SELECT auth.uid()) = user_id );
@@ -86,6 +99,7 @@ FOR DELETE USING ( (SELECT auth.uid()) = user_id );
 ### 3. Shot Placements Table
 
 Enable RLS:
+
 ```sql
 ALTER TABLE shot_placements ENABLE ROW LEVEL SECURITY;
 ```
@@ -93,26 +107,30 @@ ALTER TABLE shot_placements ENABLE ROW LEVEL SECURITY;
 Create policies:
 
 #### SELECT Policy
+
 ```sql
 CREATE POLICY "Users can view their own shot placements" ON shot_placements
 FOR SELECT USING ( (SELECT auth.uid()) = user_id );
 ```
 
 #### INSERT Policy
+
 ```sql
 CREATE POLICY "Users can create their own shot placements" ON shot_placements
 FOR INSERT WITH CHECK ( (SELECT auth.uid()) = user_id );
 ```
 
 #### UPDATE Policy
+
 ```sql
 CREATE POLICY "Users can update their own shot placements" ON shot_placements
-FOR UPDATE 
+FOR UPDATE
 USING ( (SELECT auth.uid()) = user_id )
 WITH CHECK ( (SELECT auth.uid()) = user_id );
 ```
 
 #### DELETE Policy
+
 ```sql
 CREATE POLICY "Users can delete their own shot placements" ON shot_placements
 FOR DELETE USING ( (SELECT auth.uid()) = user_id );

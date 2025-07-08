@@ -29,12 +29,14 @@ A modern, full-stack React Native application for managing shooting sessions and
 ### Installation
 
 1. **Clone the repository:**
+
    ```sh
    git clone https://github.com/your-org/target-app.git
    cd target-app
    ```
 
 2. **Install dependencies:**
+
    ```sh
    pnpm install
    ```
@@ -43,9 +45,11 @@ A modern, full-stack React Native application for managing shooting sessions and
    - Copy `.env.example` to `.env.local` and fill in your Supabase credentials.
 
 4. **Run the app:**
+
    ```sh
    pnpm run dev
    ```
+
    - For Expo Go: `pnpm run start`
    - For web: `pnpm run web`
 
@@ -113,11 +117,11 @@ A modern, full-stack React Native application for managing shooting sessions and
 
 ## Testing & Linting
 
-- **Linting:**  
+- **Linting:**
   ```sh
   pnpm run lint
   ```
-- **Formatting:**  
+- **Formatting:**
   ```sh
   pnpm run format
   ```

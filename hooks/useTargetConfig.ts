@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/config/supabase";
+import { useUserDisciplines } from "./useUserDisciplines";
 import type { Discipline, TargetType, ScoringSystem } from "@/lib/types";
 
 // Fetch all disciplines
@@ -15,6 +16,17 @@ export function useDisciplines() {
 			return data as Discipline[];
 		},
 	});
+}
+
+// Fetch only disciplines selected by the user
+export function useFilteredDisciplines() {
+	const { data: userDisciplines = [], isLoading } = useUserDisciplines();
+	const { data: allDisciplines = [], isLoading: loadingAll } = useDisciplines();
+	if (isLoading || loadingAll) return { data: [], isLoading: true };
+	const filtered = allDisciplines.filter((d) =>
+		userDisciplines.some((ud) => ud.id === d.id),
+	);
+	return { data: filtered, isLoading: false };
 }
 
 // Fetch all target types

@@ -8,7 +8,8 @@
 		"android": "expo run:android",
 		"ios": "expo run:ios",
 		"lint": "eslint . --fix",
-		"generate-colors": "node ./scripts/generate-colors.js && eslint ./constants/colors.ts --fix"
+		"generate-colors": "node ./scripts/generate-colors.js && eslint ./constants/colors.ts --fix",
+		"format": "prettier --write ."
 	},
 	"dependencies": {
 		"@hookform/resolvers": "^5.1.1",

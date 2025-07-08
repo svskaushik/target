@@ -1,0 +1,84 @@
+// Example .vscode/mcp.json
+{
+	// 💡 Inputs will be prompted on first server start,
+	//    then stored securely by VS Code.
+	"inputs": [
+		{
+			"type": "promptString",
+			"id": "perplexity-key",
+			"description": "Perplexity API Key",
+			"password": true
+		}
+	],
+	"servers": {
+		"github.com/pashpashpash/perplexity-mcp": {
+			"autoApprove": [
+				"search",
+				"get_documentation",
+				"chat_perplexity",
+				"find_apis",
+				"check_deprecated_code"
+			],
+			"disabled": false,
+			"timeout": 60,
+			"type": "stdio",
+			"command": "node",
+			"args": ["C:\\Projects\\MCP\\perplexity-mcp\\build\\index.js"],
+			"env": {
+				"PERPLEXITY_API_KEY": "${input:perplexity-key}"
+			}
+		},
+		"github.com/modelcontextprotocol/servers/tree/main/src/sequentialthinking": {
+			"autoApprove": ["sequentialthinking"],
+			"disabled": false,
+			"timeout": 60,
+			"type": "stdio",
+			"command": "npx",
+			"args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
+		},
+		"github.com/upstash/context7-mcp": {
+			"autoApprove": ["resolve-library-id", "get-library-docs"],
+			"disabled": false,
+			"timeout": 60,
+			"type": "stdio",
+			"command": "cmd",
+			"args": ["/c", "npx", "-y", "@upstash/context7-mcp@latest"]
+		},
+		"github.com/executeautomation/mcp-playwright": {
+			"autoApprove": [
+				"playwright_console_logs",
+				"playwright_navigate",
+				"start_codegen_session",
+				"end_codegen_session",
+				"get_codegen_session",
+				"clear_codegen_session",
+				"playwright_screenshot",
+				"playwright_click",
+				"playwright_close",
+				"playwright_get",
+				"playwright_get_visible_text",
+				"playwright_get_visible_html",
+				"playwright_go_back",
+				"playwright_go_forward",
+				"playwright_evaluate"
+			],
+			"disabled": false,
+			"timeout": 60,
+			"type": "stdio",
+			"command": "npx",
+			"args": ["-y", "@executeautomation/playwright-mcp-server"]
+		},
+		"supabase": {
+			"autoApprove": ["list_projects", "list_tables"],
+			"timeout": 60,
+			"type": "stdio",
+			"command": "npx",
+			"args": [
+				"-y",
+				"@supabase/mcp-server-supabase@latest",
+				"--access-token",
+				"sbp_4379d549355ac435ad610540fdb05e9f09058938"
+			]
+		}
+	}
+}

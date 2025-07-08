@@ -9,5 +9,6 @@
 	"bracketSpacing": true,
 	"bracketSameLine": false,
 	"arrowParens": "always",
-	"useTabs": true
+	"useTabs": true,
+	"endOfLine": "lf"
 }

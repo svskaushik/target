@@ -1,23 +1,36 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/config/supabase";
 import { useAuth } from "@/context/supabase-provider";
+import { useUserDisciplines } from "./useUserDisciplines";
 import type { Target, CreateTargetData } from "@/lib/types";
 
 export function useTargets() {
+	const { data: userDisciplines = [], isLoading } = useUserDisciplines();
+	const { session } = useAuth();
 	return useQuery({
-		queryKey: ["targets"],
+		queryKey: ["targets", userDisciplines.map((d) => d.id)],
 		queryFn: async () => {
-			const { data, error } = await supabase
+			if (isLoading) return [];
+			if (!session?.user?.id) return [];
+			const disciplineIds = userDisciplines
+				.map((d) => d.id)
+				.filter((id) => !!id);
+			let query = supabase
 				.from("targets")
 				.select("*")
+				.eq("user_id", session.user.id)
 				.order("created_at", { ascending: false });
-
+			if (disciplineIds.length > 0) {
+				query = query.in("discipline_id", disciplineIds);
+			}
+			const { data, error } = await query;
 			if (error) {
 				console.error("Error fetching targets:", error);
 				throw error;
 			}
 			return data as Target[];
 		},
+		enabled: !isLoading,
 	});
 }
 

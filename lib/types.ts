@@ -36,6 +36,9 @@ export interface ShotPlacement {
 	y_coordinate: number;
 	shot_number: number;
 	timestamp: string;
+	windage?: number; // in 1/4 units, can be negative or positive
+	elevation?: number; // in 1/4 units, can be negative or positive
+	status?: "good" | "bad" | "pulled_left" | "pulled_right" | "unknown";
 }
 
 export interface ApertureSetting {
@@ -68,6 +71,7 @@ export interface Profile {
 	created_at: string;
 	updated_at: string;
 }
+
 export interface Discipline {
 	id: string;
 	name: string;
@@ -97,13 +101,18 @@ export interface ScoringSystem {
 	logic: Record<string, number> | string; // zone label to score, or custom logic as string
 }
 
-// Form types
 export interface CreateTargetData {
 	name: string;
 	distance: number;
 	discipline_id: string;
 	target_type_id: string;
 	image_url?: string;
+	date?: string;
+	session_id?: string;
+	preset_elevation?: number;
+	windage?: number;
+	auto_graphing?: boolean;
+	target_number?: number;
 }
 
 export interface CreateSessionData {
@@ -124,9 +133,11 @@ export interface CreateShotPlacementData {
 	x_coordinate: number;
 	y_coordinate: number;
 	shot_number: number;
+	windage?: number;
+	elevation?: number;
+	status?: "good" | "bad" | "pulled_left" | "pulled_right" | "unknown";
 }
 
-// UI Types
 export interface ButtonProps {
 	variant?: "primary" | "secondary" | "danger" | "ghost";
 	size?: "sm" | "md" | "lg";

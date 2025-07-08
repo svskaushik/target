@@ -12,12 +12,16 @@ export function useShotPlacements(sessionId: string) {
 				.select("*")
 				.eq("session_id", sessionId)
 				.order("shot_number", { ascending: true });
-
 			if (error) {
 				console.error("Error fetching shot placements:", error);
 				throw error;
 			}
-			return data as ShotPlacement[];
+			return (data as ShotPlacement[]).map((shot) => ({
+				...shot,
+				windage: shot.windage ?? 0,
+				elevation: shot.elevation ?? 0,
+				status: shot.status ?? "good",
+			}));
 		},
 		enabled: !!sessionId,
 	});
@@ -26,48 +30,35 @@ export function useShotPlacements(sessionId: string) {
 export function useCreateShotPlacement() {
 	const queryClient = useQueryClient();
 	const { session } = useAuth();
-
 	return useMutation({
 		mutationFn: async (shotData: CreateShotPlacementData) => {
-			// Ensure user is authenticated
 			if (!session?.user?.id) {
 				throw new Error("User must be authenticated to create shot placements");
 			}
-
-			// Verify the session belongs to the user (RLS compliance)
 			const { data: sessionData, error: sessionError } = await supabase
 				.from("sessions")
 				.select("id")
 				.eq("id", shotData.session_id)
 				.eq("user_id", session.user.id)
 				.single();
-
 			if (sessionError || !sessionData) {
 				throw new Error("Session not found or access denied");
 			}
-
-			console.log(
-				"Creating shot placement for session:",
-				shotData.session_id,
-				"user:",
-				session.user.id,
-			);
-
 			const { data, error } = await supabase
 				.from("shot_placements")
 				.insert({
 					...shotData,
+					windage: shotData.windage ?? 0,
+					elevation: shotData.elevation ?? 0,
+					status: shotData.status ?? "good",
 					timestamp: new Date().toISOString(),
 				})
 				.select()
 				.single();
-
 			if (error) {
 				console.error("Error creating shot placement:", error);
 				throw new Error(`Failed to create shot placement: ${error.message}`);
 			}
-
-			console.log("Shot placement created successfully:", data);
 			return data as ShotPlacement;
 		},
 		onSuccess: (data) => {
@@ -81,53 +72,93 @@ export function useCreateShotPlacement() {
 	});
 }
 
-export function useDeleteShotPlacement() {
+export function useUpdateShotPlacement() {
 	const queryClient = useQueryClient();
 	const { session } = useAuth();
-
 	return useMutation({
-		mutationFn: async (id: string) => {
-			// Ensure user is authenticated
+		mutationFn: async ({
+			id,
+			updates,
+		}: {
+			id: string;
+			updates: Partial<Pick<ShotPlacement, "windage" | "elevation" | "status">>;
+		}) => {
 			if (!session?.user?.id) {
-				throw new Error("User must be authenticated to delete shot placements");
+				throw new Error("User must be authenticated to update shot placements");
 			}
-
-			// Get the shot to know which session to invalidate and verify ownership
 			const { data: shot, error: fetchError } = await supabase
 				.from("shot_placements")
 				.select("session_id")
 				.eq("id", id)
 				.single();
-
 			if (fetchError || !shot) {
 				throw new Error("Shot placement not found");
 			}
-
-			// Verify the session belongs to the user
 			const { data: sessionData, error: sessionError } = await supabase
 				.from("sessions")
 				.select("id")
 				.eq("id", shot.session_id)
 				.eq("user_id", session.user.id)
 				.single();
-
 			if (sessionError || !sessionData) {
 				throw new Error("Access denied: Session does not belong to user");
 			}
+			const { error } = await supabase
+				.from("shot_placements")
+				.update(updates)
+				.eq("id", id);
+			if (error) {
+				console.error("Error updating shot placement:", error);
+				throw new Error(`Failed to update shot placement: ${error.message}`);
+			}
+			return shot.session_id;
+		},
+		onSuccess: (sessionId) => {
+			if (sessionId) {
+				queryClient.invalidateQueries({
+					queryKey: ["shotPlacements", sessionId],
+				});
+			}
+		},
+		onError: (error) => {
+			console.error("Shot placement update failed:", error);
+		},
+	});
+}
 
-			console.log("Deleting shot placement:", id, "for user:", session.user.id);
-
+export function useDeleteShotPlacement() {
+	const queryClient = useQueryClient();
+	const { session } = useAuth();
+	return useMutation({
+		mutationFn: async (id: string) => {
+			if (!session?.user?.id) {
+				throw new Error("User must be authenticated to delete shot placements");
+			}
+			const { data: shot, error: fetchError } = await supabase
+				.from("shot_placements")
+				.select("session_id")
+				.eq("id", id)
+				.single();
+			if (fetchError || !shot) {
+				throw new Error("Shot placement not found");
+			}
+			const { data: sessionData, error: sessionError } = await supabase
+				.from("sessions")
+				.select("id")
+				.eq("id", shot.session_id)
+				.eq("user_id", session.user.id)
+				.single();
+			if (sessionError || !sessionData) {
+				throw new Error("Access denied: Session does not belong to user");
+			}
 			const { error } = await supabase
 				.from("shot_placements")
 				.delete()
 				.eq("id", id);
-
 			if (error) {
 				console.error("Error deleting shot placement:", error);
 				throw new Error(`Failed to delete shot placement: ${error.message}`);
 			}
-
-			console.log("Shot placement deleted successfully:", id);
 			return shot.session_id;
 		},
 		onSuccess: (sessionId) => {
@@ -146,44 +177,28 @@ export function useDeleteShotPlacement() {
 export function useClearSessionShots() {
 	const queryClient = useQueryClient();
 	const { session } = useAuth();
-
 	return useMutation({
 		mutationFn: async (sessionId: string) => {
-			// Ensure user is authenticated
 			if (!session?.user?.id) {
 				throw new Error("User must be authenticated to clear session shots");
 			}
-
-			// Verify the session belongs to the user
 			const { data: sessionData, error: sessionError } = await supabase
 				.from("sessions")
 				.select("id")
 				.eq("id", sessionId)
 				.eq("user_id", session.user.id)
 				.single();
-
 			if (sessionError || !sessionData) {
 				throw new Error("Access denied: Session does not belong to user");
 			}
-
-			console.log(
-				"Clearing shots for session:",
-				sessionId,
-				"user:",
-				session.user.id,
-			);
-
 			const { error } = await supabase
 				.from("shot_placements")
 				.delete()
 				.eq("session_id", sessionId);
-
 			if (error) {
 				console.error("Error clearing session shots:", error);
 				throw new Error(`Failed to clear session shots: ${error.message}`);
 			}
-
-			console.log("Session shots cleared successfully:", sessionId);
 		},
 		onSuccess: (_, sessionId) => {
 			queryClient.invalidateQueries({
@@ -196,14 +211,12 @@ export function useClearSessionShots() {
 	});
 }
 
-// New: Fetch total shots for the current user
 export function useTotalShots() {
 	const { session } = useAuth();
 	return useQuery({
 		queryKey: ["totalShots", session?.user?.id],
 		queryFn: async () => {
 			if (!session?.user?.id) return 0;
-			// First, get all session ids for this user
 			const { data: sessions, error: sessionError } = await supabase
 				.from("sessions")
 				.select("id")
@@ -217,7 +230,6 @@ export function useTotalShots() {
 			}
 			const sessionIds = (sessions || []).map((s: any) => s.id);
 			if (!sessionIds.length) return 0;
-			// Now count all shots for those session ids
 			const { count, error } = await supabase
 				.from("shot_placements")
 				.select("*", { count: "exact", head: true })

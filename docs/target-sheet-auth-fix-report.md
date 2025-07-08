@@ -1,6 +1,7 @@
 # Target Sheet Authentication Fix - Implementation Report
 
 ## Overview
+
 This document outlines the fixes implemented to resolve critical authentication and navigation issues in the Target Sheet app. The primary issues were:
 
 1. **OAuth Callback TypeError**: "Cannot read properties of undefined (reading 'includes')" during OAuth flow
@@ -14,12 +15,14 @@ This document outlines the fixes implemented to resolve critical authentication 
 **Problem**: Supabase's automatic URL parsing was failing with Expo Router, causing the TypeError.
 
 **Solution**: Implemented manual OAuth handling:
+
 - Updated `signInWithGoogle()` to use `skipBrowserRedirect: true`
 - Enhanced `auth/callback.tsx` to manually parse OAuth callback URLs
 - Added fallback URL parsing for different OAuth scenarios
 - Ensured consistent port usage (8082) across all OAuth redirects
 
 **Files Modified**:
+
 - `context/supabase-provider.tsx`: Updated OAuth flow
 - `app/auth/callback.tsx`: Added manual URL parsing and session exchange
 
@@ -28,31 +31,37 @@ This document outlines the fixes implemented to resolve critical authentication 
 **Problem**: AuthProvider was causing rapid navigation loops and interfering with tab navigation.
 
 **Solution**: Enhanced navigation logic:
+
 - Added debouncing to prevent rapid navigation loops
 - Improved pathname null/undefined handling
 - Better protection for OAuth callback processing
 - Enhanced tab navigation protection
 
 **Files Modified**:
+
 - `context/supabase-provider.tsx`: Improved navigation logic
 
 ### 3. Package Dependencies ✅
 
 **Problem**: Missing packages for proper OAuth handling.
 
-**Solution**: 
+**Solution**:
+
 - Installed `expo-auth-session` and `expo-web-browser` using pnpm
 - Utilized existing `expo-linking` for URL handling
 
 ## Identified Issue: Supabase RLS Policies
 
 ### Problem ⚠️
+
 The 403 Forbidden errors when creating targets indicate missing Row Level Security (RLS) policies in Supabase.
 
 ### Solution Required
+
 RLS policies must be applied in the Supabase dashboard. See `docs/supabase-rls-policies.md` for complete implementation details.
 
 **Quick Setup**:
+
 ```sql
 -- Enable RLS on targets table
 ALTER TABLE targets ENABLE ROW LEVEL SECURITY;
@@ -67,6 +76,7 @@ Similar policies are needed for `sessions` and `shot_placements` tables.
 ## Testing Performed
 
 ### ✅ Successful Tests
+
 1. **Server Startup**: Successfully starts on port 8082
 2. **Route Accessibility**: All main routes return HTTP 200
 3. **OAuth Redirect Configuration**: Consistent port usage across app
@@ -74,6 +84,7 @@ Similar policies are needed for `sessions` and `shot_placements` tables.
 5. **Navigation Flow**: Improved stability with debouncing
 
 ### ⚠️ Pending Tests (Requires RLS Setup)
+
 1. **Complete OAuth Flow**: Needs real Google OAuth credentials
 2. **Target Creation**: Requires RLS policies in Supabase
 3. **End-to-End User Flow**: Full authentication → target creation → data persistence
@@ -81,13 +92,15 @@ Similar policies are needed for `sessions` and `shot_placements` tables.
 ## Deployment Checklist
 
 ### In Supabase Dashboard:
+
 1. ✅ Configure Google OAuth provider with correct redirect URIs
 2. ⚠️ **CRITICAL**: Apply RLS policies (see `docs/supabase-rls-policies.md`)
 3. ✅ Verify redirect URLs include `http://localhost:8082/auth/callback`
 
 ### In Code:
+
 1. ✅ OAuth implementation updated
-2. ✅ Navigation system improved  
+2. ✅ Navigation system improved
 3. ✅ Dependencies installed
 4. ✅ Error handling enhanced
 5. ✅ Debug code cleaned up
@@ -95,14 +108,17 @@ Similar policies are needed for `sessions` and `shot_placements` tables.
 ## Files Modified
 
 ### Core Authentication
+
 - `context/supabase-provider.tsx`: Manual OAuth flow, improved navigation
 - `app/auth/callback.tsx`: Enhanced URL parsing and session exchange
 
 ### Documentation
+
 - `docs/supabase-rls-policies.md`: Complete RLS policy setup guide
 - `docs/target-sheet-auth-fix-report.md`: This implementation report
 
 ### Dependencies
+
 - `package.json`: Added expo-auth-session and expo-web-browser
 
 ## Next Steps

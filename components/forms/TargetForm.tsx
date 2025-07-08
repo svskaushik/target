@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { View, ScrollView } from "react-native";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -7,7 +7,13 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import type { CreateTargetData } from "@/lib/types";
-import { useDisciplines, useTargetTypes } from "@/hooks/useTargetConfig";
+import {
+	useFilteredDisciplines,
+	useTargetTypes,
+} from "@/hooks/useTargetConfig";
+// Example preset values for elevation and windage
+const ELEVATION_PRESETS = [0, 5, 10, 15, 20];
+const WINDAGE_PRESETS = [0, 2, 4, 6, 8];
 
 const targetSchema = z.object({
 	name: z
@@ -21,6 +27,12 @@ const targetSchema = z.object({
 	discipline_id: z.string().min(1, "Please select a discipline"),
 	target_type_id: z.string().min(1, "Please select a target type"),
 	image_url: z.string().url().optional().or(z.literal("")),
+	date: z.string().optional(),
+	session_id: z.string().optional(),
+	preset_elevation: z.number().optional(),
+	windage: z.number().optional(),
+	auto_graphing: z.boolean().optional(),
+	target_number: z.number().optional(),
 });
 
 interface TargetFormProps {
@@ -34,6 +46,9 @@ export function TargetForm({
 	initialData,
 	isLoading = false,
 }: TargetFormProps) {
+	// State to toggle between preset/manual for elevation and windage
+	const [usePresetElevation, setUsePresetElevation] = useState(true);
+	const [usePresetWindage, setUsePresetWindage] = useState(true);
 	const {
 		control,
 		handleSubmit,
@@ -46,12 +61,18 @@ export function TargetForm({
 			discipline_id: initialData?.discipline_id || "",
 			target_type_id: initialData?.target_type_id || "",
 			image_url: initialData?.image_url || "",
+			date: initialData?.date || "",
+			session_id: initialData?.session_id || "",
+			preset_elevation: initialData?.preset_elevation || 0,
+			windage: initialData?.windage || 0,
+			auto_graphing: initialData?.auto_graphing || false,
+			target_number: initialData?.target_number || 1,
 		},
 		mode: "onChange",
 	});
 
 	const { data: disciplines = [], isLoading: loadingDisciplines } =
-		useDisciplines();
+		useFilteredDisciplines();
 	const { data: targetTypes = [], isLoading: loadingTargetTypes } =
 		useTargetTypes();
 
@@ -75,7 +96,7 @@ export function TargetForm({
 							/>
 						)}
 					/>
-					{errors.name && (
+					{errors.name && typeof errors.name.message === "string" && (
 						<Text className="text-red-500 text-sm mt-1">
 							{errors.name.message}
 						</Text>
@@ -102,7 +123,7 @@ export function TargetForm({
 							/>
 						)}
 					/>
-					{errors.distance && (
+					{errors.distance && typeof errors.distance.message === "string" && (
 						<Text className="text-red-500 text-sm mt-1">
 							{errors.distance.message}
 						</Text>
@@ -134,11 +155,12 @@ export function TargetForm({
 							</View>
 						)}
 					/>
-					{errors.discipline_id && (
-						<Text className="text-red-500 text-sm mt-1">
-							{errors.discipline_id.message}
-						</Text>
-					)}
+					{errors.discipline_id &&
+						typeof errors.discipline_id.message === "string" && (
+							<Text className="text-red-500 text-sm mt-1">
+								{errors.discipline_id.message}
+							</Text>
+						)}
 				</View>
 
 				<View>
@@ -166,11 +188,12 @@ export function TargetForm({
 							</View>
 						)}
 					/>
-					{errors.target_type_id && (
-						<Text className="text-red-500 text-sm mt-1">
-							{errors.target_type_id.message}
-						</Text>
-					)}
+					{errors.target_type_id &&
+						typeof errors.target_type_id.message === "string" && (
+							<Text className="text-red-500 text-sm mt-1">
+								{errors.target_type_id.message}
+							</Text>
+						)}
 				</View>
 
 				<View>
@@ -192,11 +215,190 @@ export function TargetForm({
 							/>
 						)}
 					/>
-					{errors.image_url && (
+					{errors.image_url && typeof errors.image_url.message === "string" && (
 						<Text className="text-red-500 text-sm mt-1">
 							{errors.image_url.message}
 						</Text>
 					)}
+				</View>
+
+				{/* Date Field */}
+				<View>
+					<Text className="text-base font-semibold mb-2 text-gray-900">
+						Date (Optional)
+					</Text>
+					<Controller
+						control={control}
+						name="date"
+						render={({ field: { onChange, value } }) => (
+							<Input
+								placeholder="YYYY-MM-DD"
+								onChangeText={onChange}
+								value={value}
+								keyboardType="default"
+							/>
+						)}
+					/>
+				</View>
+
+				{/* Session (Optional) */}
+				<View>
+					<Text className="text-base font-semibold mb-2 text-gray-900">
+						Session (Optional)
+					</Text>
+					<Controller
+						control={control}
+						name="session_id"
+						render={({ field: { onChange, value } }) => (
+							<Input
+								placeholder="Session ID (optional)"
+								onChangeText={onChange}
+								value={value}
+								keyboardType="default"
+							/>
+						)}
+					/>
+				</View>
+
+				{/* Preset Elevation with toggle */}
+				<View>
+					<Text className="text-base font-semibold mb-2 text-gray-900">
+						Elevation (Optional)
+					</Text>
+					<View className="flex-row items-center mb-2 space-x-4">
+						<label className="flex-row items-center">
+							<input
+								type="radio"
+								checked={usePresetElevation}
+								onChange={() => setUsePresetElevation(true)}
+							/>
+							<Text className="ml-1">Preset</Text>
+						</label>
+						<label className="flex-row items-center">
+							<input
+								type="radio"
+								checked={!usePresetElevation}
+								onChange={() => setUsePresetElevation(false)}
+							/>
+							<Text className="ml-1">Manual</Text>
+						</label>
+					</View>
+					<Controller
+						control={control}
+						name="preset_elevation"
+						render={({ field: { onChange, value } }) =>
+							usePresetElevation ? (
+								<select
+									value={value ?? ""}
+									onChange={(e) => onChange(Number(e.target.value))}
+									className="border rounded px-2 py-1"
+								>
+									<option value="">Select preset</option>
+									{ELEVATION_PRESETS.map((preset) => (
+										<option key={preset} value={preset}>
+											{preset}
+										</option>
+									))}
+								</select>
+							) : (
+								<Input
+									placeholder="Enter elevation manually"
+									onChangeText={(text) => onChange(parseFloat(text) || 0)}
+									value={value?.toString()}
+									keyboardType="numeric"
+								/>
+							)
+						}
+					/>
+				</View>
+
+				{/* Windage with toggle */}
+				<View>
+					<Text className="text-base font-semibold mb-2 text-gray-900">
+						Windage (Optional)
+					</Text>
+					<View className="flex-row items-center mb-2 space-x-4">
+						<label className="flex-row items-center">
+							<input
+								type="radio"
+								checked={usePresetWindage}
+								onChange={() => setUsePresetWindage(true)}
+							/>
+							<Text className="ml-1">Preset</Text>
+						</label>
+						<label className="flex-row items-center">
+							<input
+								type="radio"
+								checked={!usePresetWindage}
+								onChange={() => setUsePresetWindage(false)}
+							/>
+							<Text className="ml-1">Manual</Text>
+						</label>
+					</View>
+					<Controller
+						control={control}
+						name="windage"
+						render={({ field: { onChange, value } }) =>
+							usePresetWindage ? (
+								<select
+									value={value ?? ""}
+									onChange={(e) => onChange(Number(e.target.value))}
+									className="border rounded px-2 py-1"
+								>
+									<option value="">Select preset</option>
+									{WINDAGE_PRESETS.map((preset) => (
+										<option key={preset} value={preset}>
+											{preset}
+										</option>
+									))}
+								</select>
+							) : (
+								<Input
+									placeholder="Enter windage manually"
+									onChangeText={(text) => onChange(parseFloat(text) || 0)}
+									value={value?.toString()}
+									keyboardType="numeric"
+								/>
+							)
+						}
+					/>
+				</View>
+
+				{/* Auto Graphing */}
+				<View className="flex-row items-center">
+					<Controller
+						control={control}
+						name="auto_graphing"
+						render={({ field: { onChange, value } }) => (
+							<>
+								<input
+									type="checkbox"
+									checked={!!value}
+									onChange={(e) => onChange(e.target.checked)}
+								/>
+								<Text className="ml-2">Enable Auto Graphing</Text>
+							</>
+						)}
+					/>
+				</View>
+
+				{/* Target Number */}
+				<View>
+					<Text className="text-base font-semibold mb-2 text-gray-900">
+						Target Number (Optional)
+					</Text>
+					<Controller
+						control={control}
+						name="target_number"
+						render={({ field: { onChange, value } }) => (
+							<Input
+								placeholder="Target Number"
+								onChangeText={(text) => onChange(parseInt(text) || 1)}
+								value={value?.toString()}
+								keyboardType="numeric"
+							/>
+						)}
+					/>
 				</View>
 
 				<Button

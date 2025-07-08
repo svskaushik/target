@@ -5,19 +5,42 @@ import { Text } from "@/components/ui/text";
 import { TargetButton } from "@/components/ui/target-button";
 import { TargetCanvas } from "@/components/target/TargetCanvas";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
-import { useSession, useDeleteSession } from "@/hooks/useSessions";
+import {
+	useSession,
+	useDeleteSession,
+	useUpdateSession,
+} from "@/hooks/useSessions";
 import { useTargetTypes } from "@/hooks/useTargetConfig";
 import { useShotPlacements } from "@/hooks/useShotPlacements";
+import { TargetForm } from "@/components/forms/TargetForm";
+import { useCreateTarget, useTargets } from "@/hooks/useTargets";
 import {
 	Play,
 	Edit3,
 	Trash2,
 	Target as TargetIcon,
-	Calendar,
 	Home,
 } from "lucide-react-native";
 
 export default function SessionDetailScreen() {
+	const { data: targets = [] } = useTargets();
+	const updateSessionMutation = useUpdateSession();
+	const [showSelectTargetModal, setShowSelectTargetModal] = useState(false);
+	const [selectingTarget, setSelectingTarget] = useState(false);
+
+	const handleOpenSelectTarget = () => setShowSelectTargetModal(true);
+	const handleCloseSelectTarget = () => setShowSelectTargetModal(false);
+	const handleSelectTarget = async (targetId: string) => {
+		setSelectingTarget(true);
+		if (session) {
+			await updateSessionMutation.mutateAsync({
+				id: session.id,
+				target_id: targetId,
+			});
+		}
+		setSelectingTarget(false);
+		setShowSelectTargetModal(false);
+	};
 	const { id } = useLocalSearchParams<{ id: string }>();
 	const { data: session, isLoading: sessionLoading } = useSession(id!);
 	const { data: targetTypes = [] } = useTargetTypes();
@@ -27,6 +50,10 @@ export default function SessionDetailScreen() {
 	);
 	const { data: shots, isLoading: shotsLoading } = useShotPlacements(id!);
 	const deleteSessionMutation = useDeleteSession();
+
+	// State for create target modal
+	const [showCreateTargetModal, setShowCreateTargetModal] = useState(false);
+	const createTargetMutation = useCreateTarget();
 
 	const [deleteModalVisible, setDeleteModalVisible] = useState(false);
 	const [deleteLoading, setDeleteLoading] = useState(false);
@@ -43,7 +70,7 @@ export default function SessionDetailScreen() {
 			setDeleteModalVisible(false);
 			setDeleteLoading(false);
 			router.back();
-		} catch (error) {
+		} catch {
 			setDeleteLoading(false);
 			// Optionally show error UI here
 		}
@@ -61,6 +88,14 @@ export default function SessionDetailScreen() {
 		router.push("/");
 	};
 
+	const handleOpenCreateTarget = () => setShowCreateTargetModal(true);
+	const handleCloseCreateTarget = () => setShowCreateTargetModal(false);
+	const handleCreateTarget = async (data: any) => {
+		await createTargetMutation.mutateAsync(data);
+		setShowCreateTargetModal(false);
+		// Optionally, refetch session/target data here
+	};
+
 	if (sessionLoading || shotsLoading || !session) {
 		return (
 			<View className="flex-1 justify-center items-center bg-white">
@@ -71,6 +106,72 @@ export default function SessionDetailScreen() {
 
 	return (
 		<>
+			{/* Select Existing Target Modal */}
+			<Modal
+				visible={showSelectTargetModal}
+				transparent
+				animationType="slide"
+				onRequestClose={handleCloseSelectTarget}
+			>
+				<View className="flex-1 justify-center items-center bg-black/40">
+					<View className="bg-white p-6 rounded-lg w-96 max-w-full items-center">
+						<Text className="text-lg font-bold text-gray-900 mb-2">
+							Select Existing Target
+						</Text>
+						<ScrollView style={{ maxHeight: 300, width: "100%" }}>
+							{targets.map((target) => (
+								<TargetButton
+									key={target.id}
+									variant={
+										session.target_id === target.id ? "primary" : "secondary"
+									}
+									className="mb-2"
+									onPress={() => handleSelectTarget(target.id)}
+									disabled={selectingTarget}
+								>
+									<Text className="font-semibold">
+										{target.name} ({target.distance}m)
+									</Text>
+								</TargetButton>
+							))}
+						</ScrollView>
+						<TargetButton
+							variant="secondary"
+							className="mt-4"
+							onPress={handleCloseSelectTarget}
+						>
+							<Text className="text-blue-700 font-semibold">Cancel</Text>
+						</TargetButton>
+					</View>
+				</View>
+			</Modal>
+			{/* Create Target Modal */}
+			<Modal
+				visible={showCreateTargetModal}
+				transparent
+				animationType="slide"
+				onRequestClose={handleCloseCreateTarget}
+			>
+				<View className="flex-1 justify-center items-center bg-black/40">
+					<View className="bg-white p-6 rounded-lg w-96 max-w-full items-center">
+						<Text className="text-lg font-bold text-gray-900 mb-2">
+							Create Target for Session
+						</Text>
+						<TargetForm
+							onSubmit={handleCreateTarget}
+							initialData={{ session_id: session.id }}
+							isLoading={createTargetMutation.isPending}
+						/>
+						<TargetButton
+							variant="secondary"
+							className="mt-4"
+							onPress={handleCloseCreateTarget}
+						>
+							<Text className="text-blue-700 font-semibold">Cancel</Text>
+						</TargetButton>
+					</View>
+				</View>
+			</Modal>
 			{/* Delete Confirmation Modal */}
 			<Modal
 				visible={deleteModalVisible}
@@ -133,9 +234,9 @@ export default function SessionDetailScreen() {
 								</Text>
 								<Text className="text-gray-600">
 									Distance: {session.target?.distance}m • Type:{" "}
-									{session.target
+									{session.target?.target_type_id
 										? targetTypeMap[session.target.target_type_id] || "Unknown"
-										: ""}
+										: "Unknown"}
 								</Text>
 								<Text className="text-gray-600">
 									Date: {new Date(session.date).toLocaleDateString()}
@@ -237,6 +338,24 @@ export default function SessionDetailScreen() {
 							<Text className="text-gray-400 text-sm text-center mt-1 mb-4">
 								Start shooting to see your shots on the target
 							</Text>
+							<TargetButton
+								variant="secondary"
+								className="mt-2"
+								onPress={handleOpenSelectTarget}
+							>
+								<Text className="text-blue-700 font-semibold">
+									Insert Existing Target
+								</Text>
+							</TargetButton>
+							<TargetButton
+								variant="primary"
+								className="mt-2"
+								onPress={handleOpenCreateTarget}
+							>
+								<Text className="text-white font-semibold">
+									Create Target for Session
+								</Text>
+							</TargetButton>
 						</View>
 					)}
 
@@ -254,6 +373,33 @@ export default function SessionDetailScreen() {
 									: "Start Shooting"}
 							</Text>
 						</View>
+					</TargetButton>
+					<TargetButton
+						variant="secondary"
+						className="w-full mt-2"
+						onPress={handleOpenSelectTarget}
+					>
+						<Text className="text-blue-700 font-semibold">
+							Insert Existing Target
+						</Text>
+					</TargetButton>
+					<TargetButton
+						variant="secondary"
+						className="w-full mt-2"
+						onPress={handleOpenCreateTarget}
+					>
+						<Text className="text-blue-700 font-semibold">
+							Create New Target for Session
+						</Text>
+					</TargetButton>
+					<TargetButton
+						variant="secondary"
+						className="w-full mt-2"
+						onPress={handleOpenCreateTarget}
+					>
+						<Text className="text-blue-700 font-semibold">
+							Create New Target for Session
+						</Text>
 					</TargetButton>
 				</View>
 

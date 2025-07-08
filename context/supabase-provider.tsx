@@ -1,16 +1,31 @@
-import {
+import React, {
 	createContext,
 	PropsWithChildren,
 	useContext,
 	useEffect,
 	useState,
+	useRef,
 } from "react";
 import { SplashScreen, useRouter, usePathname } from "expo-router";
-import { Alert } from "react-native";
-
-import { Session, AuthError } from "@supabase/supabase-js";
-
+import { useQuery } from "@tanstack/react-query";
+import { Session } from "@supabase/supabase-js";
 import { supabase } from "@/config/supabase";
+// Helper to fetch user disciplines
+function useUserDisciplinesForAuth(userId: string | undefined) {
+	return useQuery({
+		queryKey: ["user_disciplines", userId],
+		queryFn: async () => {
+			if (!userId) return [];
+			const { data, error } = await supabase
+				.from("user_disciplines")
+				.select("discipline_id")
+				.eq("user_id", userId);
+			if (error) throw error;
+			return data || [];
+		},
+		enabled: !!userId,
+	});
+}
 
 SplashScreen.preventAutoHideAsync();
 
@@ -56,6 +71,8 @@ export function AuthProvider({ children }: PropsWithChildren) {
 	const [lastNavigationTime, setLastNavigationTime] = useState(0);
 	const router = useRouter();
 	const pathname = usePathname();
+	const [checkedDisciplines, setCheckedDisciplines] = useState(false);
+	const lastDiscRedirect = useRef(0);
 
 	const signUp = async (email: string, password: string) => {
 		try {
@@ -299,51 +316,58 @@ export function AuthProvider({ children }: PropsWithChildren) {
 		};
 	}, []);
 
+	// Discipline onboarding redirect logic
+	const userId = session?.user?.id;
+	const { data: userDisciplinesData, isLoading: loadingUserDisciplines } =
+		useUserDisciplinesForAuth(userId);
+
 	useEffect(() => {
 		if (initialized) {
 			SplashScreen.hideAsync();
-
-			// Prevent rapid navigation loops - add debounce
 			const now = Date.now();
-			if (now - lastNavigationTime < 100) {
-				return;
-			}
-
-			// Ensure pathname is properly defined before using it
+			if (now - lastNavigationTime < 100) return;
 			const currentPath = pathname || "";
-
+			// Auth pages
 			if (
 				currentPath.includes("/auth/callback") ||
 				currentPath.includes("/sign-up")
 			) {
-				console.log("Skipping navigation - on auth page:", currentPath);
 				return;
 			}
-
+			// If user is authenticated and has no disciplines, force onboarding
+			if (
+				session &&
+				!loadingUserDisciplines &&
+				Array.isArray(userDisciplinesData) &&
+				userDisciplinesData.length === 0 &&
+				currentPath !== "/onboarding/discipline-select"
+			) {
+				// Prevent rapid redirects
+				if (now - lastDiscRedirect.current < 1000) return;
+				lastDiscRedirect.current = now;
+				setLastNavigationTime(now);
+				try {
+					router.replace("/onboarding/discipline-select");
+				} catch (error) {
+					console.error("Navigation error to discipline onboarding:", error);
+				}
+				return;
+			}
 			// Redirect authenticated users away from /sign-in
 			if (session && currentPath === "/sign-in") {
-				console.log(
-					"Redirecting authenticated user from /sign-in to protected area",
-				);
 				setLastNavigationTime(now);
 				try {
 					router.replace("/(protected)/(tabs)");
 				} catch (error) {
-					console.error(
-						"Navigation error when redirecting authenticated user from /sign-in:",
-						error,
-					);
+					console.error("Navigation error from /sign-in:", error);
 				}
 				return;
 			}
-
 			// Don't interfere with tab navigation within protected area
 			if (currentPath.startsWith("/(protected)")) {
 				return;
 			}
-
 			if (AUTH_DISABLED) {
-				// Always route to home if auth is disabled
 				setLastNavigationTime(now);
 				try {
 					router.replace("/(protected)/(tabs)");
@@ -352,18 +376,12 @@ export function AuthProvider({ children }: PropsWithChildren) {
 				}
 				return;
 			}
-
 			if (session) {
-				// User is authenticated, redirect to protected area only from public pages
 				if (
 					currentPath === "/welcome" ||
 					currentPath === "/" ||
 					currentPath === ""
 				) {
-					console.log(
-						"Redirecting authenticated user to protected area from:",
-						currentPath,
-					);
 					setLastNavigationTime(now);
 					try {
 						router.replace("/(protected)/(tabs)");
@@ -375,17 +393,12 @@ export function AuthProvider({ children }: PropsWithChildren) {
 					}
 				}
 			} else {
-				// User is not authenticated, redirect to welcome from any non-auth page
 				if (
 					currentPath !== "/welcome" &&
 					currentPath !== "/sign-in" &&
 					currentPath !== "/sign-up" &&
 					!currentPath.includes("/auth/callback")
 				) {
-					console.log(
-						"Redirecting unauthenticated user to welcome from:",
-						currentPath,
-					);
 					setLastNavigationTime(now);
 					try {
 						router.replace("/welcome");
@@ -399,7 +412,13 @@ export function AuthProvider({ children }: PropsWithChildren) {
 			}
 		}
 		// eslint-disable-next-line
-	}, [initialized, session, pathname]);
+	}, [
+		initialized,
+		session,
+		pathname,
+		userDisciplinesData,
+		loadingUserDisciplines,
+	]);
 
 	return (
 		<AuthContext.Provider

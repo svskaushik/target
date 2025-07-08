@@ -1,28 +1,42 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/config/supabase";
 import { useAuth } from "@/context/supabase-provider";
+import { useUserDisciplines } from "./useUserDisciplines";
 import type { Session, CreateSessionData } from "@/lib/types";
 
 export function useSessions() {
+	const { data: userDisciplines = [], isLoading } = useUserDisciplines();
 	return useQuery({
-		queryKey: ["sessions"],
+		queryKey: ["sessions", userDisciplines.map((d) => d.id)],
 		queryFn: async () => {
+			if (isLoading) return [];
+			// Fetch all sessions, discipline filtering is done via joined target if needed
 			const { data, error } = await supabase
 				.from("sessions")
 				.select(
 					`
-          *,
-          target:targets(*)
-        `,
+		  *,
+		  target:targets(*)
+		`,
 				)
 				.order("date", { ascending: false });
-
 			if (error) {
 				console.error("Error fetching sessions:", error);
 				throw error;
 			}
-			return data as Session[];
+			// Optionally filter sessions by discipline via the joined target
+			const disciplineIds = userDisciplines.map((d) => d.id).filter(Boolean);
+			let filtered = data as Session[];
+			if (disciplineIds.length > 0) {
+				filtered = filtered.filter(
+					(session: any) =>
+						session.target &&
+						disciplineIds.includes(session.target.discipline_id),
+				);
+			}
+			return filtered;
 		},
+		enabled: !isLoading,
 	});
 }
 
@@ -34,9 +48,9 @@ export function useSession(id: string) {
 				.from("sessions")
 				.select(
 					`
-          *,
-          target:targets(*)
-        `,
+		  *,
+		  target:targets(*)
+		`,
 				)
 				.eq("id", id)
 				.single();
@@ -80,9 +94,9 @@ export function useCreateSession() {
 				.insert(sessionWithUserId)
 				.select(
 					`
-          *,
-          target:targets(*)
-        `,
+		  *,
+		  target:targets(*)
+		`,
 				)
 				.single();
 
@@ -132,9 +146,9 @@ export function useUpdateSession() {
 				.eq("user_id", session.user.id) // Ensure user owns the session
 				.select(
 					`
-          *,
-          target:targets(*)
-        `,
+		  *,
+		  target:targets(*)
+		`,
 				)
 				.single();
 
