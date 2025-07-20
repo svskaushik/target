@@ -1,5 +1,11 @@
 import React, { useState } from "react";
-import { View, ScrollView, Modal, TouchableOpacity } from "react-native";
+import {
+	View,
+	ScrollView,
+	Modal,
+	TouchableOpacity,
+	useWindowDimensions,
+} from "react-native";
 import { useLocalSearchParams, router } from "expo-router";
 import { Text } from "@/components/ui/text";
 import { TargetButton } from "@/components/ui/target-button";
@@ -24,6 +30,9 @@ import {
 
 export default function SessionDetailScreen() {
 	const { data: targets = [] } = useTargets();
+	const { width: screenWidth } = useWindowDimensions();
+	// Dynamic canvas size: 80% of screen width, max 500px for tablets
+	const canvasSize = Math.min(screenWidth * 0.8, 800);
 	const updateSessionMutation = useUpdateSession();
 	const [showSelectTargetModal, setShowSelectTargetModal] = useState(false);
 	const [selectingTarget, setSelectingTarget] = useState(false);
@@ -317,90 +326,79 @@ export default function SessionDetailScreen() {
 					</Text>
 
 					{shots && shots.length > 0 ? (
-						<View className="bg-white p-4 rounded-lg border border-gray-200">
-							<TargetCanvas
-								targetImageUrl={session.target?.image_url}
-								shots={shots}
-								readonly={true}
-								zoneDefinitions={
-									targetTypes.find(
-										(tt) => tt.id === session.target?.target_type_id,
-									)?.zone_definitions || []
-								}
-							/>
-						</View>
-					) : (
-						<View className="bg-white p-8 rounded-lg border border-gray-200 items-center">
-							<TargetIcon size={48} color="#9ca3af" />
-							<Text className="text-gray-500 mt-2 text-center">
-								No shots recorded yet
-							</Text>
-							<Text className="text-gray-400 text-sm text-center mt-1 mb-4">
-								Start shooting to see your shots on the target
-							</Text>
-							<TargetButton
-								variant="secondary"
-								className="mt-2"
-								onPress={handleOpenSelectTarget}
-							>
-								<Text className="text-blue-700 font-semibold">
-									Insert Existing Target
-								</Text>
-							</TargetButton>
+						<>
+							<View className="bg-white p-4 rounded-lg border border-gray-200 items-center">
+								<TargetCanvas
+									targetImageUrl={session.target?.image_url}
+									shots={shots}
+									readonly={true}
+									zoneDefinitions={
+										targetTypes.find(
+											(tt) => tt.id === session.target?.target_type_id,
+										)?.zone_definitions || []
+									}
+									width={canvasSize}
+									height={canvasSize}
+								/>
+							</View>
+							{/* Only show shooting action when shots exist */}
 							<TargetButton
 								variant="primary"
-								className="mt-2"
-								onPress={handleOpenCreateTarget}
+								className="w-full mt-4"
+								onPress={handleStartShooting}
 							>
-								<Text className="text-white font-semibold">
-									Create Target for Session
-								</Text>
+								<View className="flex-row items-center justify-center">
+									<Play size={18} color="white" />
+									<Text className="text-white font-semibold ml-2">
+										Continue Shooting
+									</Text>
+								</View>
 							</TargetButton>
-						</View>
+						</>
+					) : (
+						<>
+							<View className="bg-white p-8 rounded-lg border border-gray-200 items-center">
+								<TargetIcon size={48} color="#9ca3af" />
+								<Text className="text-gray-500 mt-2 text-center">
+									No shots recorded yet
+								</Text>
+								<Text className="text-gray-400 text-sm text-center mt-1 mb-4">
+									Start shooting to see your shots on the target
+								</Text>
+								<TargetButton
+									variant="secondary"
+									className="mt-2"
+									onPress={handleOpenSelectTarget}
+								>
+									<Text className="text-blue-700 font-semibold">
+										Insert Existing Target
+									</Text>
+								</TargetButton>
+								<TargetButton
+									variant="primary"
+									className="mt-2"
+									onPress={handleOpenCreateTarget}
+								>
+									<Text className="text-white font-semibold">
+										Create Target for Session
+									</Text>
+								</TargetButton>
+							</View>
+							{/* Show Start Shooting button when no shots exist */}
+							<TargetButton
+								variant="primary"
+								className="w-full mt-4"
+								onPress={handleStartShooting}
+							>
+								<View className="flex-row items-center justify-center">
+									<Play size={18} color="white" />
+									<Text className="text-white font-semibold ml-2">
+										Start Shooting
+									</Text>
+								</View>
+							</TargetButton>
+						</>
 					)}
-
-					{/* Action Button */}
-					<TargetButton
-						variant="primary"
-						className="w-full mt-4"
-						onPress={handleStartShooting}
-					>
-						<View className="flex-row items-center justify-center">
-							<Play size={18} color="white" />
-							<Text className="text-white font-semibold ml-2">
-								{shots && shots.length > 0
-									? "Continue Shooting"
-									: "Start Shooting"}
-							</Text>
-						</View>
-					</TargetButton>
-					<TargetButton
-						variant="secondary"
-						className="w-full mt-2"
-						onPress={handleOpenSelectTarget}
-					>
-						<Text className="text-blue-700 font-semibold">
-							Insert Existing Target
-						</Text>
-					</TargetButton>
-					<TargetButton
-						variant="secondary"
-						className="w-full mt-2"
-						onPress={handleOpenCreateTarget}
-					>
-						<Text className="text-blue-700 font-semibold">
-							Create New Target for Session
-						</Text>
-					</TargetButton>
-					<TargetButton
-						variant="secondary"
-						className="w-full mt-2"
-						onPress={handleOpenCreateTarget}
-					>
-						<Text className="text-blue-700 font-semibold">
-							Create New Target for Session
-						</Text>
-					</TargetButton>
 				</View>
 
 				{/* Home Navigation */}

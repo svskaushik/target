@@ -23,8 +23,9 @@ export function useFilteredDisciplines() {
 	const { data: userDisciplines = [], isLoading } = useUserDisciplines();
 	const { data: allDisciplines = [], isLoading: loadingAll } = useDisciplines();
 	if (isLoading || loadingAll) return { data: [], isLoading: true };
+	const userDisciplineIds = userDisciplines.map((ud: any) => ud.discipline_id);
 	const filtered = allDisciplines.filter((d) =>
-		userDisciplines.some((ud) => ud.id === d.id),
+		userDisciplineIds.includes(d.id),
 	);
 	return { data: filtered, isLoading: false };
 }

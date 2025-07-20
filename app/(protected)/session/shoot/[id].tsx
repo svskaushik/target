@@ -6,6 +6,7 @@ import {
 	Platform,
 	Vibration,
 	ScrollView,
+	useWindowDimensions,
 } from "react-native";
 import { Switch } from "@/components/ui/switch";
 import { useLocalSearchParams, router } from "expo-router";
@@ -33,6 +34,8 @@ const SHOT_STATUS_OPTIONS = [
 ];
 
 export default function ShootingSessionScreen() {
+	const { width: screenWidth } = useWindowDimensions();
+	const baseSize = Math.min(screenWidth * 0.9, 850); // 90% of screen width, max 850px
 	const { id } = useLocalSearchParams<{ id: string }>();
 	const [resetModalVisible, setResetModalVisible] = useState(false);
 	const [resetLoading, setResetLoading] = useState(false);
@@ -615,8 +618,8 @@ export default function ShootingSessionScreen() {
 							>
 								<View
 									style={{
-										width: 320 * zoom,
-										height: 320 * zoom,
+										width: baseSize * zoom,
+										height: baseSize * zoom,
 										justifyContent: "center",
 										alignItems: "center",
 									}}
@@ -628,8 +631,8 @@ export default function ShootingSessionScreen() {
 										readonly={false}
 										showPoints={showPointsOnTarget}
 										zoneDefinitions={zoneDefinitions}
-										width={320 * zoom}
-										height={320 * zoom}
+										width={baseSize * zoom}
+										height={baseSize * zoom}
 									/>
 								</View>
 							</ScrollView>
