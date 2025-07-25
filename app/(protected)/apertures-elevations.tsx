@@ -78,7 +78,7 @@ export default function AperturesElevationsScreen() {
 
 	return (
 		<SafeAreaView className="flex-1 bg-background">
-			<ScrollView className="flex-1 p-4">
+			<ScrollView className="flex-1 px-6 py-4" contentContainerStyle={{ paddingBottom: 24 }}>
 				<View className="mb-6">
 					<H1 className="mb-2">Apertures & Elevations</H1>
 					<Muted>
