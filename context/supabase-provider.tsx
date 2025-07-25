@@ -340,16 +340,16 @@ export function AuthProvider({ children }: PropsWithChildren) {
 				!loadingUserDisciplines &&
 				Array.isArray(userDisciplinesData) &&
 				userDisciplinesData.length === 0 &&
-				currentPath !== "/onboarding/discipline-select"
+				!currentPath.startsWith("/onboarding/")
 			) {
 				// Prevent rapid redirects
 				if (now - lastDiscRedirect.current < 1000) return;
 				lastDiscRedirect.current = now;
 				setLastNavigationTime(now);
 				try {
-					router.replace("/onboarding/discipline-select");
+					router.replace("/onboarding/welcome");
 				} catch (error) {
-					console.error("Navigation error to discipline onboarding:", error);
+					console.error("Navigation error to onboarding:", error);
 				}
 				return;
 			}

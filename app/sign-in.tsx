@@ -157,7 +157,7 @@ export default function SignIn() {
 					onPress={() => router.push("/sign-up")}
 					disabled={form.formState.isSubmitting || loading}
 				>
-					<Text>Don't have an account? Sign Up</Text>
+					<Text>Don&apos;t have an account? Sign Up</Text>
 				</Button>
 			</View>
 		</SafeAreaView>

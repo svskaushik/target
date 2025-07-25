@@ -24,6 +24,10 @@ export default function AppLayout() {
 							<Stack.Screen name="(protected)" />
 							<Stack.Screen name="welcome" />
 							<Stack.Screen
+								name="onboarding"
+								options={{ headerShown: false }}
+							/>
+							<Stack.Screen
 								name="auth/callback"
 								options={{ headerShown: false }}
 							/>
