@@ -1,18 +1,20 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { View, ScrollView, TouchableOpacity } from "react-native";
-import { useDistances } from "@/hooks/useDistanceConfig";
+import { useDistances, useElevations } from "@/hooks/useDistanceConfig";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
+import { H3, Muted } from "@/components/ui/typography";
 import { ApertureElevationManager } from "./ApertureElevationManager";
 import type { CreateTargetData } from "@/lib/types";
 import {
 	useFilteredDisciplines,
 	useTargetTypes,
 } from "@/hooks/useTargetConfig";
+import { ChevronDown, Settings } from "lucide-react-native";
 
 type PickerItem = { label: string; value: string | number };
 interface PickerProps {
@@ -68,7 +70,7 @@ const targetSchema = z.object({
 		.string()
 		.min(2, "Name must be at least 2 characters")
 		.max(50, "Name must be less than 50 characters"),
-	distance_id: z.string().min(1, "Please select a distance"),
+	distance: z.number().min(1, "Distance must be greater than 0"),
 	discipline_id: z.string().min(1, "Please select a discipline"),
 	target_type_id: z.string().min(1, "Please select a target type"),
 	image_url: z.string().url().optional().or(z.literal("")),
@@ -77,7 +79,10 @@ const targetSchema = z.object({
 	preset_elevation: z.number().optional(),
 	windage: z.number().optional(),
 	auto_graphing: z.boolean().optional(),
-	target_number: z.number().optional(),
+	target_number: z
+		.number()
+		.min(1, "Target number must be at least 1")
+		.optional(),
 });
 
 interface TargetFormProps {
@@ -96,9 +101,27 @@ export function TargetForm({
 	const [usePresetWindage, setUsePresetWindage] = useState(true);
 	const [showApertureManager, setShowApertureManager] = useState(false);
 	const { data: distances = [], isLoading: loadingDistances } = useDistances();
-	const [selectedDistanceId, setSelectedDistanceId] = useState<string>(
-		initialData?.distance ? String(initialData.distance) : "",
-	);
+	const [selectedDistanceId, setSelectedDistanceId] = useState<string>("");
+
+	// Get elevations for the selected distance
+	const { data: availableElevations = [] } = useElevations(selectedDistanceId);
+
+	// Memoized elevation options
+	const elevationOptions = useMemo(() => {
+		if (availableElevations.length === 0) {
+			// Fallback to hardcoded presets if no database elevations
+			return ELEVATION_PRESETS.map((preset) => ({
+				label: String(preset),
+				value: String(preset),
+			}));
+		}
+		return availableElevations
+			.sort((a, b) => a.value - b.value)
+			.map((elevation) => ({
+				label: String(elevation.value),
+				value: String(elevation.value),
+			}));
+	}, [availableElevations]);
 	const {
 		control,
 		handleSubmit,
@@ -349,6 +372,18 @@ export function TargetForm({
 							Manual
 						</Button>
 					</View>
+
+					{/* Show elevation info */}
+					{usePresetElevation && selectedDistanceId && (
+						<View className="mb-2 p-2 bg-green-50 rounded">
+							<Text className="text-sm text-green-700">
+								{availableElevations.length > 0
+									? `Using ${availableElevations.length} preset elevations for selected distance`
+									: "Using default elevation presets (no custom elevations configured)"}
+							</Text>
+						</View>
+					)}
+
 					<Controller
 						control={control}
 						name="preset_elevation"
@@ -360,12 +395,10 @@ export function TargetForm({
 										onChange(Number(val))
 									}
 									items={[
-										{ label: "Select preset", value: "" },
-										...ELEVATION_PRESETS.map((preset) => ({
-											label: String(preset),
-											value: String(preset),
-										})),
+										{ label: "Select preset elevation", value: "" },
+										...elevationOptions,
 									]}
+									enabled={elevationOptions.length > 0}
 								/>
 							) : (
 								<Input
@@ -377,6 +410,13 @@ export function TargetForm({
 							)
 						}
 					/>
+
+					{/* Helpful text for elevation */}
+					{usePresetElevation && !selectedDistanceId && (
+						<Text className="text-sm text-gray-500 mt-1">
+							Select a distance first to see available preset elevations
+						</Text>
+					)}
 				</View>
 
 				{/* Windage with toggle */}

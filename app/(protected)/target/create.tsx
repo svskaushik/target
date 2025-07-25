@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Alert } from "react-native";
 import { router } from "expo-router";
-import { TargetForm } from "@/components/forms/TargetForm";
+import { ImprovedTargetForm } from "@/components/forms/ImprovedTargetForm";
 import { FloatingActionButton } from "@/components/ui/floating-action-button";
 import { useCreateTarget } from "@/hooks/useTargets";
 import type { CreateTargetData } from "@/lib/types";
@@ -13,14 +13,14 @@ export default function CreateTargetScreen() {
 		try {
 			const newTarget = await createTargetMutation.mutateAsync(data);
 			router.replace(`/target/${newTarget.id}`);
-		} catch (error) {
+		} catch {
 			Alert.alert("Error", "Failed to create target. Please try again.");
 		}
 	};
 
 	return (
 		<View className="flex-1 bg-white">
-			<TargetForm
+			<ImprovedTargetForm
 				onSubmit={handleSubmit}
 				isLoading={createTargetMutation.isPending}
 			/>

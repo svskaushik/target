@@ -100,6 +100,15 @@ export default function ProtectedLayout() {
 				}}
 			/>
 
+			{/* Apertures and Elevations screen */}
+			<Stack.Screen
+				name="apertures-elevations"
+				options={{
+					title: "Apertures & Elevations",
+					presentation: "card",
+				}}
+			/>
+
 			{/* Modal screen */}
 			<Stack.Screen
 				name="modal"

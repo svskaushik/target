@@ -10,7 +10,14 @@ import {
 	useUserDisciplines,
 	useUpdateUserDisciplines,
 } from "@/hooks/useUserDisciplines";
-import { ChevronLeft, Check, Target, Crosshair, Zap, Wind } from "lucide-react-native";
+import {
+	ChevronLeft,
+	Check,
+	Target,
+	Crosshair,
+	Zap,
+	Wind,
+} from "lucide-react-native";
 
 // Icon mapping for different disciplines
 const disciplineIcons: Record<string, React.ComponentType<any>> = {
@@ -28,8 +35,14 @@ interface DisciplineCardProps {
 	description?: string;
 }
 
-function DisciplineCard({ discipline, isSelected, onToggle, description }: DisciplineCardProps) {
-	const IconComponent = disciplineIcons[discipline.name.toLowerCase()] || disciplineIcons.default;
+function DisciplineCard({
+	discipline,
+	isSelected,
+	onToggle,
+	description,
+}: DisciplineCardProps) {
+	const IconComponent =
+		disciplineIcons[discipline.name.toLowerCase()] || disciplineIcons.default;
 
 	return (
 		<Button
@@ -40,14 +53,20 @@ function DisciplineCard({ discipline, isSelected, onToggle, description }: Disci
 			<View className="p-4 w-full">
 				<View className="flex-row items-center justify-between mb-2">
 					<View className="flex-row items-center flex-1">
-						<View className={`p-2 rounded-full mr-3 ${isSelected ? "bg-primary/20" : "bg-muted"}`}>
-							<IconComponent 
-								size={20} 
-								className={isSelected ? "text-primary" : "text-muted-foreground"} 
+						<View
+							className={`p-2 rounded-full mr-3 ${isSelected ? "bg-primary/20" : "bg-muted"}`}
+						>
+							<IconComponent
+								size={20}
+								className={
+									isSelected ? "text-primary" : "text-muted-foreground"
+								}
 							/>
 						</View>
 						<View className="flex-1">
-							<H2 className={`text-lg font-semibold ${isSelected ? "text-primary" : "text-foreground"}`}>
+							<H2
+								className={`text-lg font-semibold ${isSelected ? "text-primary" : "text-foreground"}`}
+							>
 								{discipline.name}
 							</H2>
 							{description && (
@@ -67,20 +86,22 @@ function DisciplineCard({ discipline, isSelected, onToggle, description }: Disci
 }
 
 export default function DisciplineSelectOnboarding() {
-	const { data: allDisciplines = [], isLoading: loadingDisciplines } = useDisciplines();
-	const { data: userDisciplines = [], isLoading: loadingUserDisciplines } = useUserDisciplines();
+	const { data: allDisciplines = [], isLoading: loadingDisciplines } =
+		useDisciplines();
+	const { data: userDisciplines = [], isLoading: loadingUserDisciplines } =
+		useUserDisciplines();
 	const updateUserDisciplines = useUpdateUserDisciplines();
 	const [selected, setSelected] = useState<string[]>([]);
 	const [submitting, setSubmitting] = useState(false);
 
 	// Discipline descriptions for better understanding
 	const disciplineDescriptions: Record<string, string> = {
-		"Rifle": "Long-range precision shooting with rifles",
-		"Pistol": "Handgun accuracy and speed shooting",
-		"Archery": "Traditional bow and arrow shooting",
+		Rifle: "Long-range precision shooting with rifles",
+		Pistol: "Handgun accuracy and speed shooting",
+		Archery: "Traditional bow and arrow shooting",
 		"Air Gun": "Indoor precision with air rifles/pistols",
-		"Shotgun": "Clay pigeon and bird hunting sports",
-		"Crossbow": "Modern crossbow target shooting",
+		Shotgun: "Clay pigeon and bird hunting sports",
+		Crossbow: "Modern crossbow target shooting",
 	};
 
 	useEffect(() => {
@@ -108,7 +129,7 @@ export default function DisciplineSelectOnboarding() {
 			Alert.alert(
 				"No Disciplines Available",
 				"No shooting disciplines are available. Please contact support.",
-				[{ text: "OK" }]
+				[{ text: "OK" }],
 			);
 			return;
 		}
@@ -116,31 +137,35 @@ export default function DisciplineSelectOnboarding() {
 		try {
 			setSubmitting(true);
 			console.log("Attempting to save disciplines:", finalSelection);
-			
+
 			await updateUserDisciplines.mutateAsync(finalSelection);
-			
+
 			console.log("Disciplines saved successfully, navigating to complete");
 			router.replace("/onboarding/complete");
 		} catch (e: any) {
 			console.error("Failed to save disciplines:", e);
-			
-			let errorMessage = "We couldn&apos;t save your discipline preferences. Please try again.";
-			
+
+			let errorMessage =
+				"We couldn&apos;t save your discipline preferences. Please try again.";
+
 			if (e.message?.includes("User account not found")) {
-				errorMessage = "Your account session has expired. Please sign out and sign in again.";
+				errorMessage =
+					"Your account session has expired. Please sign out and sign in again.";
 			} else if (e.message?.includes("Invalid discipline")) {
-				errorMessage = "There was an issue with the selected disciplines. Please try selecting different ones.";
+				errorMessage =
+					"There was an issue with the selected disciplines. Please try selecting different ones.";
 			} else if (e.message?.includes("At least one discipline")) {
-				errorMessage = "Please select at least one shooting discipline to continue.";
+				errorMessage =
+					"Please select at least one shooting discipline to continue.";
 			}
-			
+
 			Alert.alert("Setup Error", errorMessage, [
-				{ 
-					text: "Try Again", 
+				{
+					text: "Try Again",
 					onPress: () => {
 						// Reset selection to allow user to try again
 						setSelected([]);
-					}
+					},
 				},
 				{
 					text: "Sign Out",
@@ -148,8 +173,8 @@ export default function DisciplineSelectOnboarding() {
 					onPress: () => {
 						// Navigate to sign out - you might need to implement this
 						router.replace("/welcome");
-					}
-				}
+					},
+				},
 			]);
 		} finally {
 			setSubmitting(false);
@@ -165,7 +190,9 @@ export default function DisciplineSelectOnboarding() {
 			<SafeAreaView className="flex-1 bg-background">
 				<View className="flex-1 items-center justify-center">
 					<ActivityIndicator size="large" />
-					<Text className="mt-4 text-muted-foreground">Loading disciplines...</Text>
+					<Text className="mt-4 text-muted-foreground">
+						Loading disciplines...
+					</Text>
 				</View>
 			</SafeAreaView>
 		);
@@ -189,7 +216,8 @@ export default function DisciplineSelectOnboarding() {
 					{/* Explanation */}
 					<View className="mb-8">
 						<Muted className="text-lg leading-relaxed">
-							Select the shooting disciplines you practice. This helps us show you relevant targets and features.
+							Select the shooting disciplines you practice. This helps us show
+							you relevant targets and features.
 						</Muted>
 						<View className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
 							<Text className="text-blue-800 text-sm font-medium">
@@ -215,12 +243,13 @@ export default function DisciplineSelectOnboarding() {
 					{selected.length > 0 && (
 						<View className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
 							<Text className="text-green-800 font-medium mb-2">
-								Selected: {selected.length} discipline{selected.length !== 1 ? 's' : ''}
+								Selected: {selected.length} discipline
+								{selected.length !== 1 ? "s" : ""}
 							</Text>
 							<Text className="text-green-700 text-sm">
 								{allDisciplines
-									.filter(d => selected.includes(d.id))
-									.map(d => d.name)
+									.filter((d) => selected.includes(d.id))
+									.map((d) => d.name)
 									.join(", ")}
 							</Text>
 						</View>
@@ -237,7 +266,11 @@ export default function DisciplineSelectOnboarding() {
 					>
 						{submitting || updateUserDisciplines.status === "pending" ? (
 							<>
-								<ActivityIndicator size="small" color="white" className="mr-2" />
+								<ActivityIndicator
+									size="small"
+									color="white"
+									className="mr-2"
+								/>
 								<Text className="text-lg font-semibold">Setting up...</Text>
 							</>
 						) : (

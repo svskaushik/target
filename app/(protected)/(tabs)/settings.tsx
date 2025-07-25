@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { View, Alert, ActivityIndicator, ScrollView } from "react-native";
+import { router } from "expo-router";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { ApertureElevationManager } from "@/components/forms/ApertureElevationManager";
@@ -217,6 +218,23 @@ export default function Settings() {
 									Select a distance to manage its apertures and elevations.
 								</Text>
 							)}
+						</View>
+
+						{/* Apertures & Elevations Management */}
+						<View className="bg-white rounded-lg shadow p-6 w-full border border-gray-200 mt-2">
+							<H1 className="text-xl font-bold mb-4">Apertures & Elevations</H1>
+							<Muted className="mb-4">
+								Manage your aperture and elevation settings for different
+								distances.
+							</Muted>
+							<Button
+								className="w-full"
+								size="default"
+								variant="outline"
+								onPress={() => router.push("/apertures-elevations")}
+							>
+								<Text>Open Apertures & Elevations Manager</Text>
+							</Button>
 						</View>
 
 						{/* Sign Out Section */}
